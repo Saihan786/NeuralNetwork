@@ -1,0 +1,1 @@
+Remaking a basic Neural Network to be packaged and trained on a small example.
