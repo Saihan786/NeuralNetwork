@@ -164,8 +164,8 @@ class NeuronLayer:
 class Network:
     """
     This is an entire Neural Network. It can input some data and calculate
-    the activation values for every neuron in the network, and output what the
-    network thinks the data represents.
+    the activation values for every neuron in the network, and output what
+    the network thinks the data represents.
 
     If input data is specified as training data, the network will change its
     weights of connections and biases of neurons to output a more accurate
@@ -175,12 +175,33 @@ class Network:
     its activation is directly tied to its corresponding input data value.
 
     Each neuron in the output layer corresponds to a digit.
+
+    Instance methods:
+        - get_initial_layer
+        - get_output_layers
+        - get_layers
+        - think
+        - train
     """
 
-    def __init__(self, layers: List[NeuronLayer] = []) -> None:
-        self.layers = layers
-        self.initial_layer: NeuronLayer = NeuronLayer(size=10)
-        self.output_layer: NeuronLayer = NeuronLayer(size=10)
+    def __init__(self, layers: Optional[List[NeuronLayer]] = None) -> None:
+        if layers:
+            self.layers = layers
+            self.initial_layer = layers[0]
+            self.output_layer = layers[-1]
+        else:
+            self.layers = []
+            self.initial_layer: NeuronLayer = NeuronLayer(size=10)
+            self.output_layer: NeuronLayer = NeuronLayer(size=10)
+
+    def get_initial_layer(self) -> NeuronLayer:
+        return self.initial_layer
+
+    def get_output_layer(self) -> NeuronLayer:
+        return self.output_layer
+
+    def get_layers(self) -> List[NeuronLayer]:
+        return self.layers
 
     def think(self, input_data: List[int]):
         """Return what the network thinks the input data represents, based on
