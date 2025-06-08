@@ -143,8 +143,6 @@ class NeuronLayer:
 
     def activate_next_layer(self):
         """
-        TODO
-
         Sets the activation values for each neuron in the next layer.
 
         Uses:
