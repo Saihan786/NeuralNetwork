@@ -68,6 +68,10 @@ class TestNeuronLayer(unittest.TestCase):
             initial_layer=True,
         )
 
+    def test_initialise_with_size(self):
+        five_neuron_layer = neuron_classes.NeuronLayer(size=5)
+        assert len(five_neuron_layer.get_neurons()) == 5
+
     def test_get_neurons(self):
         assert self.initial_neuron_layer.get_neurons() == [self.initial_neuron]
         assert self.neuron_layer.get_neurons() == [self.neuron]
@@ -102,8 +106,43 @@ class TestNeuronLayer(unittest.TestCase):
         assert self.neuron.get_activation() == 0
         assert self.forward_neuron.get_activation() == 0
 
+    def test_get_activations(self):
+        self.neuron.set_activation(activation=5)
+        assert self.neuron_layer.get_activations() == [5]
+
     def test_neuron_layer_activate_next_layer(self):
-        """TODO"""
+        size = 3
+        fneurons = [neuron_classes.Neuron(bias=i) for i in range(1, size + 1)]
+        forward_large_layer = neuron_classes.NeuronLayer(
+            size=size,
+            neurons=fneurons,
+        )
+        assert forward_large_layer.get_biases() == [1, 2, 3]
+
+        large_layer = neuron_classes.NeuronLayer(
+            size=size,
+            next_layer=forward_large_layer,
+        )
+
+        inc = 1
+        for neuron in large_layer.get_neurons():
+            neuron.set_activation(inc)
+            neuron.set_weights(
+                {
+                    forward_large_layer.get_neurons()[0]: 1,
+                    forward_large_layer.get_neurons()[1]: 2,
+                    forward_large_layer.get_neurons()[2]: 3,
+                }
+            )
+            inc += 1
+        assert [list(n.get_weights().values()) for n in large_layer.get_neurons()] == [
+            [1, 2, 3],
+            [1, 2, 3],
+            [1, 2, 3],
+        ]
+
+        large_layer.activate_next_layer()
+        assert forward_large_layer.get_activations() == [7, 14, 21]
 
 
 class TestNeuralNetwork(unittest.TestCase):

@@ -113,10 +113,7 @@ class NeuronLayer:
         self.next_layer = next_layer
 
     def __initialise_neurons(self, size) -> List[Neuron]:
-        if self.initial_layer:
-            return [Neuron(initial_layer=True) for i in range(size)]
-        else:
-            return [Neuron() for i in range(size)]
+        return [Neuron() for i in range(size)]
 
     def get_neurons(self) -> List[Neuron]:
         return self.neurons
@@ -126,6 +123,9 @@ class NeuronLayer:
 
     def get_biases(self) -> List[int]:
         return [neuron.get_bias() for neuron in self.neurons]
+
+    def get_activations(self) -> List[int]:
+        return [neuron.get_activation() for neuron in self.neurons]
 
     def activate_initial_layer(self, input_data: List[int]):
         """
@@ -140,20 +140,22 @@ class NeuronLayer:
         if self.initial_layer and len(input_data) == len(self.neurons):
             for i in range(len(self.neurons)):
                 self.neurons[i].set_activation(input_data[i])
-            return "Success"
 
     def activate_next_layer(self):
         """
-        Finds the activation values for each neuron in the next layer.
+        TODO
+
+        Sets the activation values for each neuron in the next layer.
 
         Uses:
-            - The activation values of the neurons of this layer
+            - The activation values of the neurons of this layer.
             - The weight of every forward-connection.
+            - The bias of each neuron in the next layer.
         """
 
         if self.get_next_layer():
             for forward_neuron in self.get_next_layer().get_neurons():
-                activation = forward_neuron.get_bias()
+                activation: int = forward_neuron.get_bias()
                 for neuron in self.neurons:
                     activation += (
                         neuron.activation * neuron.get_weights()[forward_neuron]
@@ -209,12 +211,63 @@ class Network:
 
         self.initial_layer.activate_next_layer()
 
-    def train(self, input_data: List[int]):
+    def randomise(self):
+        """Sets the biases and weights of every Neuron to a random number."""
+
+    def set_all_activation_values(self, input_data: List[int]):
         """
-        Trains the network to generate a result more accurate to the input
-        data.
+        This requires all biases and weights to be set.
+
+        `input_data` is used to set activation values for the initial layer,
+        then each following layer has their activation values set by the
+        directly preceding layer.
+
+        The weights from the preceding layer and the
+        activation values of the Neurons in the preceding layer are used to
+        determine the activation value of a Neuron of a layer.
 
         NOTE: Requires backpropagation and the cost function to be set up.
         """
 
-        pass
+        self.initial_layer.activate_initial_layer(input_data=input_data)
+        for layer in self.layers[:-1]:
+            layer.activate_next_layer()
+
+    def train_one_example(
+        self, input_data: List[int], desired_output: int, minimise_cost: bool
+    ):
+        """
+        TODO
+        Trains the network based on a single training example.
+
+        The cost of input data is found from one training example. If
+        `minimise_cost` is True, then the cost will be minimised to find a
+        gradient vector with backpropagation, which is then applied to the
+        network.
+
+        The network is then considered trained on this one example.
+
+        Args:
+            - input_data (): Data that activates certain Neurons in the
+            initial layer.
+            - desired_output (): The output that the network should produce
+            after receiving the `input_data`. Cost is measured against this.
+
+        Returns:
+            - cost (float): Cost of the network for this training example.
+        """
+
+    def train(self, all_input_data: List[List[int]]):
+        """
+        TODO
+        Trains the network based on a list of input_data.
+
+        The average cost over all training examples is found, and is passed to
+        the cost minimisation functions.
+
+        Cost minimisation is used alongside backpropagation to find the
+        gradient vector, which is applied to each neuron to adjust all
+        activation values.
+
+        The network is then considered trained.
+        """
