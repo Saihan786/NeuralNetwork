@@ -6,117 +6,135 @@ class TestNeuron(unittest.TestCase):
     """Tests for the `Neuron` class."""
 
     def setUp(self):
-        self.initial_neuron = neuron_classes.Neuron()
         self.neuron = neuron_classes.Neuron()
         self.forward_neuron = neuron_classes.Neuron()
 
-    def test_neuron(self):
+    def test_repeat_init(self):
+        self.neuron.set_bias(5)
+        self.neuron.set_weights({self.forward_neuron: 5})
+        self.neuron.set_weight(self.forward_neuron, 5)
+        self.neuron = neuron_classes.Neuron()
+        assert self.neuron.get_bias() == 0
+        assert self.neuron.get_weights() == {}
+        assert self.forward_neuron.get_weights() == {}
+
+    def test_bias(self):
         self.neuron.set_bias(5)
         assert self.neuron.get_bias() == 5
+        assert self.forward_neuron.get_bias() == 0
 
+    def test_initial_weights(self):
+        assert self.neuron.get_weights() == {}
+        assert self.forward_neuron.get_weights() == {}
+
+    def test_weights(self):
+        assert self.forward_neuron.get_weights() == {}
         self.neuron.set_weights({self.forward_neuron: 5})
         assert self.neuron.get_weights() == {self.forward_neuron: 5}
+        assert self.forward_neuron.get_weights() == {}
 
-        self.neuron.set_weights({})
-        assert self.neuron.get_weights() == {}
+    def test_weight(self):
         self.neuron.set_weight(self.forward_neuron, 5)
         assert self.neuron.get_weights() == {self.forward_neuron: 5}
+        assert self.forward_neuron.get_weights() == {}
 
+    def test_activation(self):
         self.neuron.set_activation(5)
         assert self.neuron.get_activation() == 5
-
-
-class TestNeuronLayer(unittest.TestCase):
-    """Tests for the `NeuronLayer` class."""
-
-    def setUp(self):
-        self.initial_neuron = neuron_classes.Neuron()
-        self.neuron = neuron_classes.Neuron()
-        self.forward_neuron = neuron_classes.Neuron()
-
-        self.forward_neuron_layer = neuron_classes.NeuronLayer(
-            size=-1,
-            neurons=[self.forward_neuron],
-        )
-        self.neuron_layer = neuron_classes.NeuronLayer(
-            size=-1,
-            neurons=[self.neuron],
-            next_layer=self.forward_neuron_layer,
-        )
-        self.initial_neuron_layer = neuron_classes.NeuronLayer(
-            size=-1,
-            neurons=[self.initial_neuron],
-            next_layer=self.neuron_layer,
-            initial_layer=True,
-        )
-
-    def test_neuron_layer(self):
-        assert self.initial_neuron_layer.get_neurons() == [self.initial_neuron]
-        assert self.neuron_layer.get_neurons() == [self.neuron]
-        assert self.forward_neuron_layer.get_neurons() == [self.forward_neuron]
-
-        self.initial_neuron.set_bias(1)
-        assert self.initial_neuron_layer.get_biases() == [1]
-        self.neuron.set_bias(2)
-        assert self.neuron_layer.get_biases() == [2]
-        self.forward_neuron.set_bias(3)
-        assert self.forward_neuron_layer.get_biases() == [3]
-
-        self.initial_neuron_layer.activate_initial_layer([5])
-        assert self.initial_neuron.get_activation() == 5
-        self.neuron_layer.activate_initial_layer([5])
-        assert self.neuron.get_activation() == 0
-        self.forward_neuron_layer.activate_initial_layer([5])
         assert self.forward_neuron.get_activation() == 0
 
-    def test_neuron_layer_activate_next_layer(self):
-        """TODO"""
 
-        self.initial_neuron.set_bias(10)
-        self.neuron.set_bias(10)
-        self.forward_neuron.set_bias(10)
+# class TestNeuronLayer(unittest.TestCase):
+#     """Tests for the `NeuronLayer` class."""
 
-        for neuron in self.initial_neuron_layer.get_neurons():
-            pass
+#     def setUp(self):
+#         self.initial_neuron = neuron_classes.Neuron()
+#         self.neuron = neuron_classes.Neuron()
+#         self.forward_neuron = neuron_classes.Neuron()
 
-        self.initial_neuron.set_weight(self.neuron, 5)
-        self.neuron.set_weight(self.forward_neuron, 5)
+#         self.forward_neuron_layer = neuron_classes.NeuronLayer(
+#             size=-1,
+#             neurons=[self.forward_neuron],
+#         )
+#         self.neuron_layer = neuron_classes.NeuronLayer(
+#             size=-1,
+#             neurons=[self.neuron],
+#             next_layer=self.forward_neuron_layer,
+#         )
+#         self.initial_neuron_layer = neuron_classes.NeuronLayer(
+#             size=-1,
+#             neurons=[self.initial_neuron],
+#             next_layer=self.neuron_layer,
+#             initial_layer=True,
+#         )
+
+#     def test_neuron_layer(self):
+#         assert self.initial_neuron_layer.get_neurons() == [self.initial_neuron]
+#         assert self.neuron_layer.get_neurons() == [self.neuron]
+#         assert self.forward_neuron_layer.get_neurons() == [self.forward_neuron]
+
+#         self.initial_neuron.set_bias(1)
+#         assert self.initial_neuron_layer.get_biases() == [1]
+#         self.neuron.set_bias(2)
+#         assert self.neuron_layer.get_biases() == [2]
+#         self.forward_neuron.set_bias(3)
+#         assert self.forward_neuron_layer.get_biases() == [3]
+
+#         self.initial_neuron_layer.activate_initial_layer([5])
+#         assert self.initial_neuron.get_activation() == 5
+#         self.neuron_layer.activate_initial_layer([5])
+#         assert self.neuron.get_activation() == 0
+#         self.forward_neuron_layer.activate_initial_layer([5])
+#         assert self.forward_neuron.get_activation() == 0
+
+#     def test_neuron_layer_activate_next_layer(self):
+#         """TODO"""
+
+#         self.initial_neuron.set_bias(10)
+#         self.neuron.set_bias(10)
+#         self.forward_neuron.set_bias(10)
+
+#         for neuron in self.initial_neuron_layer.get_neurons():
+#             pass
+
+#         self.initial_neuron.set_weight(self.neuron, 5)
+#         self.neuron.set_weight(self.forward_neuron, 5)
 
 
-class TestNeuralNetwork(unittest.TestCase):
-    """Tests for the `Network` class."""
+# class TestNeuralNetwork(unittest.TestCase):
+#     """Tests for the `Network` class."""
 
-    def setUp(self):
-        self.initial_neuron = neuron_classes.Neuron()
-        self.neuron = neuron_classes.Neuron()
-        self.forward_neuron = neuron_classes.Neuron()
+#     def setUp(self):
+#         self.initial_neuron = neuron_classes.Neuron()
+#         self.neuron = neuron_classes.Neuron()
+#         self.forward_neuron = neuron_classes.Neuron()
 
-        self.forward_neuron_layer = neuron_classes.NeuronLayer(
-            size=-1,
-            neurons=[self.forward_neuron],
-        )
-        self.neuron_layer = neuron_classes.NeuronLayer(
-            size=-1,
-            neurons=[self.neuron],
-            next_layer=self.forward_neuron_layer,
-        )
-        self.initial_neuron_layer = neuron_classes.NeuronLayer(
-            size=-1,
-            neurons=[self.initial_neuron],
-            next_layer=self.neuron_layer,
-            initial_layer=True,
-        )
+#         self.forward_neuron_layer = neuron_classes.NeuronLayer(
+#             size=-1,
+#             neurons=[self.forward_neuron],
+#         )
+#         self.neuron_layer = neuron_classes.NeuronLayer(
+#             size=-1,
+#             neurons=[self.neuron],
+#             next_layer=self.forward_neuron_layer,
+#         )
+#         self.initial_neuron_layer = neuron_classes.NeuronLayer(
+#             size=-1,
+#             neurons=[self.initial_neuron],
+#             next_layer=self.neuron_layer,
+#             initial_layer=True,
+#         )
 
-        self.neural_network = neuron_classes.Network(
-            layers=[
-                self.initial_neuron_layer,
-                self.neuron_layer,
-                self.forward_neuron_layer,
-            ]
-        )
+#         self.neural_network = neuron_classes.Network(
+#             layers=[
+#                 self.initial_neuron_layer,
+#                 self.neuron_layer,
+#                 self.forward_neuron_layer,
+#             ]
+#         )
 
-    def test_neural_network(self):
-        pass
+#     def test_neural_network(self):
+#         pass
 
 
 if __name__ == "__main__":

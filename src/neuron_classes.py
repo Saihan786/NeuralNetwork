@@ -42,10 +42,10 @@ class Neuron:
     def __init__(
         self,
         bias=0,
-        weights: Dict[Neuron, int] = {},
+        weights: Optional[Dict[Neuron, int]] = None,
     ) -> None:
         self.bias = bias
-        self.weights = weights
+        self.weights = weights if weights else {}
         self.activation = 0
 
     def set_activation(self, activation: int) -> None:
@@ -60,17 +60,20 @@ class Neuron:
     def get_bias(self) -> int:
         return self.bias
 
+    def set_weight(self, next_neuron: Neuron, weight: int) -> None:
+        """Modifies a weighted connection between this Neuron and the given
+        Neuron."""
+
+        self.weights[next_neuron] = weight
+
     def set_weights(self, weights: Dict[Neuron, int]) -> None:
+        """Sets all weighted connections between this Neuron and other
+        Neurons."""
+
         self.weights = weights
 
     def get_weights(self) -> Dict[Neuron, int]:
         return self.weights
-
-    def set_weight(self, next_neuron: Neuron, weight: int) -> None:
-        """Selects a weight to modify based on the corresponding
-        forward-Neuron."""
-
-        self.weights[next_neuron] = weight
 
 
 class NeuronLayer:
