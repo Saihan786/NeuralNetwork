@@ -3,9 +3,34 @@ import src.neuron_classes as neuron_classes
 
 
 class TestNeuron(unittest.TestCase):
+    """Tests for the `Neuron` class."""
 
     def setUp(self):
-        self.initial_neuron = neuron_classes.Neuron(initial_layer=True)
+        self.initial_neuron = neuron_classes.Neuron()
+        self.neuron = neuron_classes.Neuron()
+        self.forward_neuron = neuron_classes.Neuron()
+
+    def test_neuron(self):
+        self.neuron.set_bias(5)
+        assert self.neuron.get_bias() == 5
+
+        self.neuron.set_weights({self.forward_neuron: 5})
+        assert self.neuron.get_weights() == {self.forward_neuron: 5}
+
+        self.neuron.set_weights({})
+        assert self.neuron.get_weights() == {}
+        self.neuron.set_weight(self.forward_neuron, 5)
+        assert self.neuron.get_weights() == {self.forward_neuron: 5}
+
+        self.neuron.set_activation(5)
+        assert self.neuron.get_activation() == 5
+
+
+class TestNeuronLayer(unittest.TestCase):
+    """Tests for the `NeuronLayer` class."""
+
+    def setUp(self):
+        self.initial_neuron = neuron_classes.Neuron()
         self.neuron = neuron_classes.Neuron()
         self.forward_neuron = neuron_classes.Neuron()
 
@@ -24,29 +49,6 @@ class TestNeuron(unittest.TestCase):
             next_layer=self.neuron_layer,
             initial_layer=True,
         )
-
-        self.neural_network = neuron_classes.Network(
-            layers=[
-                self.initial_neuron_layer,
-                self.neuron_layer,
-                self.forward_neuron_layer,
-            ]
-        )
-
-    def test_neuron(self):
-        self.neuron.set_bias(5)
-        assert self.neuron.get_bias() == 5
-
-        self.neuron.set_weights({self.forward_neuron: 5})
-        assert self.neuron.get_weights() == {self.forward_neuron: 5}
-
-        self.neuron.set_weights({})
-        assert self.neuron.get_weights() == {}
-        self.neuron.set_weight(self.forward_neuron, 5)
-        assert self.neuron.get_weights() == {self.forward_neuron: 5}
-
-        self.neuron.set_activation(5)
-        assert self.neuron.get_activation() == 5
 
     def test_neuron_layer(self):
         assert self.initial_neuron_layer.get_neurons() == [self.initial_neuron]
@@ -79,6 +81,39 @@ class TestNeuron(unittest.TestCase):
 
         self.initial_neuron.set_weight(self.neuron, 5)
         self.neuron.set_weight(self.forward_neuron, 5)
+
+
+class TestNeuralNetwork(unittest.TestCase):
+    """Tests for the `Network` class."""
+
+    def setUp(self):
+        self.initial_neuron = neuron_classes.Neuron()
+        self.neuron = neuron_classes.Neuron()
+        self.forward_neuron = neuron_classes.Neuron()
+
+        self.forward_neuron_layer = neuron_classes.NeuronLayer(
+            size=-1,
+            neurons=[self.forward_neuron],
+        )
+        self.neuron_layer = neuron_classes.NeuronLayer(
+            size=-1,
+            neurons=[self.neuron],
+            next_layer=self.forward_neuron_layer,
+        )
+        self.initial_neuron_layer = neuron_classes.NeuronLayer(
+            size=-1,
+            neurons=[self.initial_neuron],
+            next_layer=self.neuron_layer,
+            initial_layer=True,
+        )
+
+        self.neural_network = neuron_classes.Network(
+            layers=[
+                self.initial_neuron_layer,
+                self.neuron_layer,
+                self.forward_neuron_layer,
+            ]
+        )
 
     def test_neural_network(self):
         pass

@@ -43,11 +43,9 @@ class Neuron:
         self,
         bias=0,
         weights: Dict[Neuron, int] = {},
-        initial_layer: bool = False,
     ) -> None:
         self.bias = bias
         self.weights = weights
-        self.initial_layer = initial_layer
         self.activation = 0
 
     def set_activation(self, activation: int) -> None:
@@ -105,13 +103,13 @@ class NeuronLayer:
         neurons: List[Neuron] = [],
         next_layer: Optional[NeuronLayer] = None,
     ) -> None:
-        self.initial_layer: bool = initial_layer
+        self.initial_layer = initial_layer
         self.neurons: List[Neuron] = (
-            neurons if neurons else self.__initialise(size)
+            neurons if neurons else self.__initialise_neurons(size)
         )
         self.next_layer = next_layer
 
-    def __initialise(self, size) -> List[Neuron]:
+    def __initialise_neurons(self, size) -> List[Neuron]:
         if self.initial_layer:
             return [Neuron(initial_layer=True) for i in range(size)]
         else:
@@ -120,8 +118,8 @@ class NeuronLayer:
     def get_neurons(self) -> List[Neuron]:
         return self.neurons
 
-    def get_next_layer(self):
-        """TODO"""
+    def get_next_layer(self) -> Optional[NeuronLayer]:
+        return self.next_layer
 
     def get_biases(self) -> List[int]:
         return [neuron.get_bias() for neuron in self.neurons]
@@ -150,8 +148,8 @@ class NeuronLayer:
             - The weight of every forward-connection.
         """
 
-        if self.next_layer:
-            for forward_neuron in self.next_layer.get_neurons():
+        if self.get_next_layer():
+            for forward_neuron in self.get_next_layer().get_neurons():
                 activation = forward_neuron.get_bias()
                 for neuron in self.neurons:
                     activation += (
