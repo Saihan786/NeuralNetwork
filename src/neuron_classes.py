@@ -103,7 +103,7 @@ class NeuronLayer:
         self,
         size: int,
         initial_layer: bool = False,
-        neurons: List[Neuron] = [],
+        neurons: Optional[List[Neuron]] = None,
         next_layer: Optional[NeuronLayer] = None,
     ) -> None:
         self.initial_layer = initial_layer
@@ -127,17 +127,17 @@ class NeuronLayer:
     def get_biases(self) -> List[int]:
         return [neuron.get_bias() for neuron in self.neurons]
 
-    def activate_initial_layer(self, input_data: List[int]) -> str:
-        """If this is the initial layer of the network, the neurons of this
-        layer have their activation values set. Otherwise nothing happens."""
+    def activate_initial_layer(self, input_data: List[int]):
+        """
+        If this is the initial layer of the network, the neurons of this
+        layer have their activation values set to the `input_data`. Otherwise
+        nothing happens.
 
-        if len(input_data) > len(self.neurons):
-            return "Too much input data"
-        elif len(input_data) < len(self.neurons):
-            return "Too little input data"
-        elif not self.initial_layer:
-            return "Not initial layer"
-        else:
+        The size of `input_data` must match the number of neurons, or nothing
+        will happen.
+        """
+
+        if self.initial_layer and len(input_data) == len(self.neurons):
             for i in range(len(self.neurons)):
                 self.neurons[i].set_activation(input_data[i])
             return "Success"
