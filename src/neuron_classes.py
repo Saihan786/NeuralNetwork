@@ -78,12 +78,11 @@ class NeuronLayer:
         - activate_initial_layer
     """
 
-    next_layer: Optional[NeuronLayer] = None
-
     def __init__(
         self,
         size: int,
         initial_layer: bool = False,
+        output_layer: bool = False,
         neurons: Optional[List[Neuron]] = None,
         next_layer: Optional[NeuronLayer] = None,
     ) -> None:
@@ -91,7 +90,8 @@ class NeuronLayer:
         self.neurons: List[Neuron] = (
             neurons if neurons else self.__initialise_neurons(size)
         )
-        self.next_layer = next_layer
+        if not output_layer:
+            self.next_layer = next_layer if next_layer else None
 
     def __initialise_neurons(self, size) -> List[Neuron]:
         return [Neuron() for i in range(size)]
@@ -112,6 +112,9 @@ class NeuronLayer:
 
     @weights.setter
     def weights(self, all_weights: List[List[int]]):
+        if not self.next_layer:
+            return
+
         fneurons: List[Neuron] = self.next_layer.neurons
 
         for i in range(len(self.neurons)):

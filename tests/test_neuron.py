@@ -211,8 +211,8 @@ class TestNeuralNetwork(unittest.TestCase):
     def test_cost_function(self):
         """
         TODO:
-            - Use conftest to establish a neural network that already has weights and
-            biases.
+            - Use conftest to establish a neural network that already has
+            weights and biases.
                 - Test `network.activate_layers()` separately.
         """
 
