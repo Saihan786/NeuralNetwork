@@ -45,35 +45,16 @@ class Neuron:
         weights: Optional[Dict[Neuron, int]] = None,
     ) -> None:
         self.bias = bias
-        self.weights = weights if weights else {}
+        self.__weights = weights if weights else {}
         self.activation = 0
 
-    def set_activation(self, activation: int) -> None:
-        self.activation = activation
+    @property
+    def weights(self):
+        return self.__weights
 
-    def get_activation(self) -> int:
-        return self.activation
-
-    def set_bias(self, bias: int) -> None:
-        self.bias = bias
-
-    def get_bias(self) -> int:
-        return self.bias
-
-    def set_weight(self, next_neuron: Neuron, weight: int) -> None:
-        """Modifies a weighted connection between this Neuron and the given
-        Neuron."""
-
-        self.weights[next_neuron] = weight
-
-    def set_weights(self, weights: Dict[Neuron, int]) -> None:
-        """Sets all weighted connections between this Neuron and other
-        Neurons."""
-
-        self.weights = weights
-
-    def get_weights(self) -> Dict[Neuron, int]:
-        return self.weights
+    @weights.setter
+    def weights(self, weights: Dict[Neuron, int]) -> None:
+        self.__weights = weights
 
 
 class NeuronLayer:
@@ -115,33 +96,35 @@ class NeuronLayer:
     def __initialise_neurons(self, size) -> List[Neuron]:
         return [Neuron() for i in range(size)]
 
-    def get_neurons(self) -> List[Neuron]:
-        return self.neurons
+    @property
+    def biases(self) -> List[int]:
+        return [neuron.bias for neuron in self.neurons]
 
-    def get_next_layer(self) -> Optional[NeuronLayer]:
-        return self.next_layer
+    @biases.setter
+    def biases(self, biases: List[int]):
+        for i in range(len(self.neurons)):
+            neuron = self.neurons[i]
+            neuron.bias = biases[i]
 
-    def get_biases(self) -> List[int]:
-        return [neuron.get_bias() for neuron in self.neurons]
+    @property
+    def weights(self) -> List[Dict[Neuron, int]]:
+        return [neuron.weights for neuron in self.neurons]
 
-    def set_biases(self, biases: List[int]):
-        for i in range(len(self.get_neurons())):
-            neuron = self.get_neurons()[i]
-            neuron.set_bias(biases[i])
+    @weights.setter
+    def weights(self, all_weights: List[List[int]]):
+        fneurons: List[Neuron] = self.next_layer.neurons
 
-    def set_weights(self, all_weights: List[List[int]]):
-        fneurons: List[Neuron] = self.get_next_layer().get_neurons()
-
-        for i in range(len(self.get_neurons())):
-            neuron = self.get_neurons()[i]
+        for i in range(len(self.neurons)):
+            neuron = self.neurons[i]
             neuron_weights = all_weights[i]
 
-            neuron.set_weights(
-                {fneurons[j]: neuron_weights[j] for j in range(len(fneurons))}
-            )
+            neuron.weights = {
+                fneurons[j]: neuron_weights[j] for j in range(len(fneurons))
+            }
 
-    def get_activations(self) -> List[int]:
-        return [neuron.get_activation() for neuron in self.neurons]
+    @property
+    def activations(self) -> List[int]:
+        return [neuron.activation for neuron in self.neurons]
 
     def activate_initial_layer(self, input_data: List[int]):
         """
@@ -155,7 +138,7 @@ class NeuronLayer:
 
         if self.initial_layer and len(input_data) == len(self.neurons):
             for i in range(len(self.neurons)):
-                self.neurons[i].set_activation(input_data[i])
+                self.neurons[i].activation = input_data[i]
 
     def activate_next_layer(self):
         """
@@ -167,13 +150,13 @@ class NeuronLayer:
             - The bias of each neuron in the next layer.
         """
 
-        if self.get_next_layer():
-            for forward_neuron in self.get_next_layer().get_neurons():
-                activation: int = forward_neuron.get_bias()
+        if self.next_layer:
+            for forward_neuron in self.next_layer.neurons:
+                activation: int = forward_neuron.bias
                 for neuron in self.neurons:
                     if neuron.weights:
                         activation += neuron.activation * neuron.weights[forward_neuron]
-                forward_neuron.set_activation(activation)
+                forward_neuron.activation = activation
 
 
 class Network:
@@ -192,9 +175,6 @@ class Network:
     Each neuron in the output layer corresponds to a digit.
 
     Instance methods:
-        - get_initial_layer
-        - get_output_layers
-        - get_layers
         - think
         - train
     """
@@ -208,15 +188,6 @@ class Network:
             self.layers = []
             self.initial_layer: NeuronLayer = NeuronLayer(size=10)
             self.output_layer: NeuronLayer = NeuronLayer(size=10)
-
-    def get_initial_layer(self) -> NeuronLayer:
-        return self.initial_layer
-
-    def get_output_layer(self) -> NeuronLayer:
-        return self.output_layer
-
-    def get_layers(self) -> List[NeuronLayer]:
-        return self.layers
 
     def think(self, input_data: List[int]):
         """Return what the network thinks the input data represents, based on
@@ -241,10 +212,10 @@ class Network:
         """
 
         self.initial_layer.activate_initial_layer(input_data=input_data)
-        for non_output_layer in self.get_layers()[:-1]:
+        for non_output_layer in self.layers[:-1]:
             non_output_layer.activate_next_layer()
 
-        return self.output_layer.get_activations()
+        return self.output_layer.activations
 
     def cost_function(self, desired_output: List[int]) -> int:
         """
@@ -274,12 +245,12 @@ class Network:
         """
 
         cost: int = 0
-        output_neurons: List[Neuron] = self.get_output_layer().get_neurons()
+        output_neurons: List[Neuron] = self.output_layer.neurons
         if len(output_neurons) != len(desired_output):
             return -1
 
         for i in range(len(output_neurons)):
-            actual_activation = output_neurons[i].get_activation()
+            actual_activation = output_neurons[i].activation
             desired_activation = desired_output[i]
 
             sqr_diff = actual_activation - desired_activation
