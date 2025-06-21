@@ -124,6 +124,22 @@ class NeuronLayer:
     def get_biases(self) -> List[int]:
         return [neuron.get_bias() for neuron in self.neurons]
 
+    def set_biases(self, biases: List[int]):
+        for i in range(len(self.get_neurons())):
+            neuron = self.get_neurons()[i]
+            neuron.set_bias(biases[i])
+
+    def set_weights(self, all_weights: List[List[int]]):
+        fneurons: List[Neuron] = self.get_next_layer().get_neurons()
+
+        for i in range(len(self.get_neurons())):
+            neuron = self.get_neurons()[i]
+            neuron_weights = all_weights[i]
+
+            neuron.set_weights(
+                {fneurons[j]: neuron_weights[j] for j in range(len(fneurons))}
+            )
+
     def get_activations(self) -> List[int]:
         return [neuron.get_activation() for neuron in self.neurons]
 
@@ -155,9 +171,8 @@ class NeuronLayer:
             for forward_neuron in self.get_next_layer().get_neurons():
                 activation: int = forward_neuron.get_bias()
                 for neuron in self.neurons:
-                    activation += (
-                        neuron.activation * neuron.get_weights()[forward_neuron]
-                    )
+                    if neuron.weights:
+                        activation += neuron.activation * neuron.weights[forward_neuron]
                 forward_neuron.set_activation(activation)
 
 
@@ -212,30 +227,74 @@ class Network:
     def randomise(self):
         """Sets the biases and weights of every Neuron to a random number."""
 
-    def set_all_activation_values(self, input_data: List[int]):
+    def activate_layers(self, input_data: List[int]) -> List[int]:
         """
-        This requires all biases and weights to be set.
+        This activates every layer in the network. This means every neuron in
+        the network will have its activation value set, based on the weights
+        and biases already in the network.
 
-        `input_data` is used to set activation values for the initial layer,
-        then each following layer has their activation values set by the
-        directly preceding layer.
-
-        The weights from the preceding layer and the
-        activation values of the Neurons in the preceding layer are used to
-        determine the activation value of a Neuron of a layer.
-
-        NOTE: Requires backpropagation and the cost function to be set up.
+        Args:
+            - input_data (List[int]): Sets activation values for the initial
+            layer.
+        Returns:
+            - A list of activation values of the output layer.
         """
 
         self.initial_layer.activate_initial_layer(input_data=input_data)
-        for layer in self.layers[:-1]:
-            layer.activate_next_layer()
+        for non_output_layer in self.get_layers()[:-1]:
+            non_output_layer.activate_next_layer()
+
+        return self.output_layer.get_activations()
+
+    def cost_function(self, desired_output: List[int]) -> int:
+        """
+        Overall:
+            - This determines the "cost" of the current set of weights and
+            biases for the given training example.
+
+        Cost:
+            - Cost is the sum of all squared differences.
+            - Each squared difference is between the actual output activation
+            value and its corresponding desired activation value.
+
+        Example:
+            - Training data expects an activation value of 100 for the output
+            neuron indicating 3, and 0 for all the other output neurons.
+            - Cost is therefore found by seeing how far all the actual
+            activation values are from 100 and 0.
+
+        Args:
+            - desired_output (List[int]): A list of expected output activation
+            values corresponding to each output neuron.
+
+        Returns:
+            - -1 if `desired_output` is not in the correct format.
+            - cost (int): Summed sqr differences between expected and actual
+            activation values.
+        """
+
+        cost: int = 0
+        output_neurons: List[Neuron] = self.get_output_layer().get_neurons()
+        if len(output_neurons) != len(desired_output):
+            return -1
+
+        for i in range(len(output_neurons)):
+            actual_activation = output_neurons[i].get_activation()
+            desired_activation = desired_output[i]
+
+            sqr_diff = actual_activation - desired_activation
+            sqr_diff *= sqr_diff
+            cost += sqr_diff
+
+        return cost
 
     def train_one_example(
         self, input_data: List[int], desired_output: int, minimise_cost: bool
     ):
         """
         TODO
+        NOTE: Requires cost_function and backpropagation to be set up.
+
         Trains the network based on a single training example.
 
         The cost of input data is found from one training example. If
@@ -255,7 +314,7 @@ class Network:
             - cost (float): Cost of the network for this training example.
         """
 
-    def train(self, all_input_data: List[List[int]]):
+    def train(self, all_input_data: List[List[int]], all_desired_outputs: List[int]):
         """
         TODO
         Trains the network based on a list of input_data.

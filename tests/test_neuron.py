@@ -110,6 +110,14 @@ class TestNeuronLayer(unittest.TestCase):
         self.neuron.set_activation(activation=5)
         assert self.neuron_layer.get_activations() == [5]
 
+    def test_set_biases(self):
+        self.neuron_layer.set_biases([5])
+        assert self.neuron_layer.get_biases() == [5]
+
+    def test_set_weights(self):
+        self.neuron_layer.set_weights([[5]])
+        assert self.neuron.weights == {self.forward_neuron: 5}
+
     def test_neuron_layer_activate_next_layer(self):
         size = 3
         fneurons = [neuron_classes.Neuron(bias=i) for i in range(1, size + 1)]
@@ -189,6 +197,36 @@ class TestNeuralNetwork(unittest.TestCase):
             self.neuron_layer,
             self.forward_neuron_layer,
         ]
+
+    def test_activate_layers(self):
+        self.initial_neuron.weights = {self.neuron: 1}
+
+        self.neuron.bias = 5
+        self.neuron.weights = {self.forward_neuron: 1}
+
+        self.forward_neuron.bias = 5
+
+        assert self.neural_network.activate_layers([10]) == [20]
+        assert self.neural_network.output_layer.get_activations() == [20]
+
+        self.initial_neuron.weights = {self.neuron: 2}
+        self.neuron.weights = {self.forward_neuron: 2}
+
+        assert self.neural_network.activate_layers([10]) == [55]
+        assert self.neural_network.output_layer.get_activations() == [55]
+
+    def test_cost_function(self):
+        """
+        TODO:
+            - Use conftest to establish a neural network that already has weights and
+            biases.
+                - Test `network.activate_layers()` separately.
+        """
+
+        self.forward_neuron.set_activation(10)
+
+        assert self.neural_network.cost_function(desired_output=[10]) == 0
+        assert self.neural_network.cost_function(desired_output=[20]) == 100
 
     def test_think(self):
         """TODO"""
