@@ -208,7 +208,7 @@ class TestNeuralNetwork(unittest.TestCase):
         assert self.neural_network.activate_layers([10]) == [55]
         assert self.neural_network.output_layer.activations == [55]
 
-    def test_cost_function(self):
+    def test_cost_function_no_input_data(self):
         """
         TODO:
             - Use conftest to establish a neural network that already has
@@ -218,8 +218,37 @@ class TestNeuralNetwork(unittest.TestCase):
 
         self.forward_neuron.activation = 10
 
-        assert self.neural_network.cost_function(desired_output=[10]) == 0
-        assert self.neural_network.cost_function(desired_output=[20]) == 100
+        assert self.neural_network.cost_function(desired_output=[10]) == [0]
+        assert self.neural_network.cost_function(desired_output=[20]) == [100]
+
+    def test_cost_function_with_input_data(self):
+        """
+        TODO:
+            - Use conftest to establish a neural network that already has
+            weights and biases.
+                - Test `network.activate_layers()` separately.
+        """
+
+        OUTPUT_ACTIVATION_AFTER_INPUT_DATA = 142
+        self.initial_neuron.bias = 1
+        self.initial_neuron.weights[self.neuron] = 2
+
+        self.neuron.bias = 10
+        self.neuron.weights[self.forward_neuron] = 11
+
+        self.forward_neuron.bias = 10
+        self.forward_neuron.activation = 10
+
+        assert self.neural_network.cost_function(desired_output=[20]) == [100]
+
+        applied_new_activation = self.neural_network.cost_function(
+            desired_output=[20], input_data=[1]
+        )
+
+        self.forward_neuron.activation = OUTPUT_ACTIVATION_AFTER_INPUT_DATA
+        assert applied_new_activation == self.neural_network.cost_function(
+            desired_output=[20]
+        )
 
     def test_think(self):
         """TODO"""

@@ -220,11 +220,17 @@ class Network:
 
         return self.output_layer.activations
 
-    def cost_function(self, desired_output: List[int]) -> int:
+    def cost_function(
+        self, desired_output: List[int], input_data: Optional[List[int]] = None
+    ) -> List[int]:
         """
         Overall:
             - This determines the "cost" of the current set of weights and
             biases for the given training example.
+
+            - If `input_data` is provided, then output activation values are
+            recalculated, then cost is calculated based on these.
+                - Else, the existing output activation values are used.
 
         Cost:
             - Cost is the sum of all squared differences.
@@ -247,7 +253,10 @@ class Network:
             activation values.
         """
 
-        cost: int = 0
+        if input_data:
+            self.activate_layers(input_data=input_data)
+
+        cost: List[int] = []
         output_neurons: List[Neuron] = self.output_layer.neurons
         if len(output_neurons) != len(desired_output):
             return -1
@@ -258,7 +267,7 @@ class Network:
 
             sqr_diff = actual_activation - desired_activation
             sqr_diff *= sqr_diff
-            cost += sqr_diff
+            cost.append(sqr_diff)
 
         return cost
 
