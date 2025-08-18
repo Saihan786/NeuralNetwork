@@ -1,5 +1,5 @@
 import unittest
-import src.neuron_classes as neuron_classes
+from neural_network import neuron_classes as neuron_classes
 
 
 class TestNeuron(unittest.TestCase):
