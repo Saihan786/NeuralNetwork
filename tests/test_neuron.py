@@ -241,14 +241,32 @@ class TestNeuralNetwork(unittest.TestCase):
 
         assert self.neural_network.cost_function(desired_output=[20]) == [100]
 
-        applied_new_activation = self.neural_network.cost_function(
-            desired_output=[20], input_data=[1]
-        )
+        applied_new_activation = self.neural_network.cost_function(desired_output=[20], input_data=[1])
 
         self.forward_neuron.activation = OUTPUT_ACTIVATION_AFTER_INPUT_DATA
-        assert applied_new_activation == self.neural_network.cost_function(
-            desired_output=[20]
-        )
+        assert applied_new_activation == self.neural_network.cost_function(desired_output=[20])
+
+    def test_cost_function_with_incorrect_desired_output(self):
+        """
+        TODO:
+            - Use conftest to establish a neural network that already has
+            weights and biases.
+                - Test `network.activate_layers()` separately.
+        """
+
+        self.initial_neuron.bias = 1
+        self.initial_neuron.weights[self.neuron] = 2
+
+        self.neuron.bias = 10
+        self.neuron.weights[self.forward_neuron] = 11
+
+        self.forward_neuron.bias = 10
+        self.forward_neuron.activation = 10
+
+        NUM_OUTPUT_NEURONS = 1
+
+        assert self.neural_network.cost_function(desired_output=([20] * (NUM_OUTPUT_NEURONS + 1))) == []
+        assert self.neural_network.cost_function(desired_output=([20] * (NUM_OUTPUT_NEURONS))) != []
 
     def test_think(self):
         """TODO"""

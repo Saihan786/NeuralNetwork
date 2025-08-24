@@ -87,9 +87,7 @@ class NeuronLayer:
         next_layer: Optional[NeuronLayer] = None,
     ) -> None:
         self.initial_layer = initial_layer
-        self.neurons: List[Neuron] = (
-            neurons if neurons else self.__initialise_neurons(size)
-        )
+        self.neurons: List[Neuron] = neurons if neurons else self.__initialise_neurons(size)
         if not output_layer:
             self.next_layer = next_layer if next_layer else None
 
@@ -121,9 +119,7 @@ class NeuronLayer:
             neuron = self.neurons[i]
             neuron_weights = all_weights[i]
 
-            neuron.weights = {
-                fneurons[j]: neuron_weights[j] for j in range(len(fneurons))
-            }
+            neuron.weights = {fneurons[j]: neuron_weights[j] for j in range(len(fneurons))}
 
     @property
     def activations(self) -> List[int]:
@@ -220,9 +216,7 @@ class Network:
 
         return self.output_layer.activations
 
-    def cost_function(
-        self, desired_output: List[int], input_data: Optional[List[int]] = None
-    ) -> List[int]:
+    def cost_function(self, desired_output: List[int], input_data: Optional[List[int]] = None) -> List[int]:
         """
         Overall:
             - This determines the "cost" of the current set of weights and
@@ -248,8 +242,10 @@ class Network:
             values corresponding to each output neuron.
 
         Returns:
-            - -1 if `desired_output` is not in the correct format.
-            - cost (int): Summed sqr differences between expected and actual
+            - Empty list if `desired_output` does not contain a value corresponding to each output neuron.
+                - i.e., len(desired_output) MUST EQUAL len(output_neurons)
+
+            - cost (List[int]): List of summed sqr differences between expected and actual
             activation values.
         """
 
@@ -259,7 +255,7 @@ class Network:
         cost: List[int] = []
         output_neurons: List[Neuron] = self.output_layer.neurons
         if len(output_neurons) != len(desired_output):
-            return -1
+            return []
 
         for i in range(len(output_neurons)):
             actual_activation = output_neurons[i].activation
@@ -271,9 +267,7 @@ class Network:
 
         return cost
 
-    def train_one_example(
-        self, input_data: List[int], desired_output: int, minimise_cost: bool
-    ):
+    def train_one_example(self, input_data: List[int], desired_output: int, minimise_cost: bool):
         """
         TODO
         NOTE: Requires cost_function and backpropagation to be set up.
