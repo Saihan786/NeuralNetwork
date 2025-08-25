@@ -1,3 +1,4 @@
+from typing import List
 import unittest
 from neural_network import neuron_classes as neuron_classes
 
@@ -156,70 +157,109 @@ class TestNeuralNetwork(unittest.TestCase):
     """Tests for the `Network` class."""
 
     def setUp(self):
+        # --- SINGLE NEURON SETUP ---
+
+        # Make three neurons
         self.initial_neuron = neuron_classes.Neuron()
         self.neuron = neuron_classes.Neuron()
-        self.forward_neuron = neuron_classes.Neuron()
+        self.output_neuron = neuron_classes.Neuron()
 
-        self.forward_neuron_layer = neuron_classes.NeuronLayer(
+        # Make a neuron layer for each neuron
+        self.output_neuron_layer = neuron_classes.NeuronLayer(
             size=-1,
-            neurons=[self.forward_neuron],
+            neurons=[self.output_neuron],
         )
         self.neuron_layer = neuron_classes.NeuronLayer(
-            size=-1,
-            neurons=[self.neuron],
-            next_layer=self.forward_neuron_layer,
+            size=-1, neurons=[self.neuron], next_layer=self.output_neuron_layer
         )
         self.initial_neuron_layer = neuron_classes.NeuronLayer(
-            size=-1,
-            neurons=[self.initial_neuron],
-            next_layer=self.neuron_layer,
-            initial_layer=True,
+            size=-1, neurons=[self.initial_neuron], next_layer=self.neuron_layer, initial_layer=True
         )
 
+        # Set weights and biases for single neuron
+        self.initial_neuron.weights = {self.neuron: 1}
+        self.neuron.weights = {self.output_neuron: 1}
+
+        self.neuron.bias = 5
+        self.output_neuron.bias = 5
+
+        # Make a neural network for the layers
         self.neural_network = neuron_classes.Network(
-            layers=[
-                self.initial_neuron_layer,
-                self.neuron_layer,
-                self.forward_neuron_layer,
-            ]
+            layers=[self.initial_neuron_layer, self.neuron_layer, self.output_neuron_layer]
         )
+
+        # --- TEN NEURON SETUP ---
+
+        # Make three lists of 10 neurons each
+        self.output_ten_neurons = [neuron_classes.Neuron() for _ in range(10)]
+        self.hidden_ten_neurons = [neuron_classes.Neuron() for _ in range(10)]
+        self.input_ten_neurons = [neuron_classes.Neuron() for _ in range(10)]
+
+        # Make the ten neuron layers
+        self.output_layer_ten_neurons = neuron_classes.NeuronLayer(size=10, neurons=self.output_ten_neurons)
+        self.hidden_layer_ten_neurons = neuron_classes.NeuronLayer(
+            size=10, neurons=self.hidden_ten_neurons, next_layer=self.output_layer_ten_neurons
+        )
+        self.input_layer_ten_neurons = neuron_classes.NeuronLayer(
+            size=10, neurons=self.input_ten_neurons, next_layer=self.hidden_layer_ten_neurons, initial_layer=True
+        )
+
+        # Set weights and biases for ten neurons
+        for input_neuron in self.input_ten_neurons:
+            input_neuron.weights = {hidden_neuron: 1 for hidden_neuron in self.hidden_ten_neurons}
+
+        for hidden_neuron in self.hidden_ten_neurons:
+            hidden_neuron.bias = 5
+            hidden_neuron.weights = {output_neuron: 1 for output_neuron in self.output_ten_neurons}
+
+        for output_neuron in self.output_ten_neurons:
+            output_neuron.bias = 5
+
+        # For each output neuron, (
+        #   given that `self.input_ten_neurons_result` = 10 * (w * a) = 10 * (1 * 1) = 10,
+        #
+        #   one output_neuron = output_neuron_bias + (10 * hidden_neuron_w * hidden_neuron_a)
+        #       = 5 + 10*(1 * self.input_ten_neurons_result + hidden_neuron_bias)
+        #       = 5 + 10*(1 * 10 + 5)
+        #       = 5 + 10 * 15
+        #       = 155
+        # )
+        self.expected_output_ten_neurons = [155] * 10
 
     def test_get_layers(self):
         assert self.neural_network.layers == [
             self.initial_neuron_layer,
             self.neuron_layer,
-            self.forward_neuron_layer,
+            self.output_neuron_layer,
         ]
 
-    def test_activate_layers(self):
+    def test_activate_layers_one_neuron(self):
         self.initial_neuron.weights = {self.neuron: 1}
 
         self.neuron.bias = 5
-        self.neuron.weights = {self.forward_neuron: 1}
+        self.neuron.weights = {self.output_neuron: 1}
 
-        self.forward_neuron.bias = 5
+        self.output_neuron.bias = 5
 
         assert self.neural_network.activate_layers([10]) == [20]
         assert self.neural_network.output_layer.activations == [20]
 
         self.initial_neuron.weights = {self.neuron: 2}
-        self.neuron.weights = {self.forward_neuron: 2}
+        self.neuron.weights = {self.output_neuron: 2}
 
         assert self.neural_network.activate_layers([10]) == [55]
         assert self.neural_network.output_layer.activations == [55]
 
-    def test_cost_function_no_input_data(self):
-        """
-        TODO:
-            - Use conftest to establish a neural network that already has
-            weights and biases.
-                - Test `network.activate_layers()` separately.
-        """
+    def test_activate_layers_ten_neurons(self):
+        # Create network
+        network = neuron_classes.Network(
+            layers=[self.input_layer_ten_neurons, self.hidden_layer_ten_neurons, self.output_layer_ten_neurons]
+        )
 
-        self.forward_neuron.activation = 10
-
-        assert self.neural_network.cost_function(desired_output=[10]) == [0]
-        assert self.neural_network.cost_function(desired_output=[20]) == [100]
+        # Test first activation
+        input_data = [1] * 10
+        assert network.activate_layers(input_data) == self.expected_output_ten_neurons
+        assert network.output_layer.activations == self.expected_output_ten_neurons
 
     def test_cost_function_with_input_data(self):
         """
@@ -234,17 +274,25 @@ class TestNeuralNetwork(unittest.TestCase):
         self.initial_neuron.weights[self.neuron] = 2
 
         self.neuron.bias = 10
-        self.neuron.weights[self.forward_neuron] = 11
+        self.neuron.weights[self.output_neuron] = 11
 
-        self.forward_neuron.bias = 10
-        self.forward_neuron.activation = 10
+        self.output_neuron.bias = 10
+        self.output_neuron.activation = 10
 
         assert self.neural_network.cost_function(desired_output=[20]) == [100]
 
         applied_new_activation = self.neural_network.cost_function(desired_output=[20], input_data=[1])
 
-        self.forward_neuron.activation = OUTPUT_ACTIVATION_AFTER_INPUT_DATA
+        self.output_neuron.activation = OUTPUT_ACTIVATION_AFTER_INPUT_DATA
         assert applied_new_activation == self.neural_network.cost_function(desired_output=[20])
+
+    def test_cost_function_with_input_data_ten_neurons(self):
+        network = neuron_classes.Network(
+            layers=[self.input_layer_ten_neurons, self.hidden_layer_ten_neurons, self.output_layer_ten_neurons]
+        )
+
+        assert network.cost_function(desired_output=self.expected_output_ten_neurons, input_data=[1] * 10) == [0] * 10
+        assert network.cost_function(desired_output=[255] * 10, input_data=[2] * 10) == [0] * 10
 
     def test_cost_function_with_incorrect_desired_output(self):
         """
@@ -258,21 +306,25 @@ class TestNeuralNetwork(unittest.TestCase):
         self.initial_neuron.weights[self.neuron] = 2
 
         self.neuron.bias = 10
-        self.neuron.weights[self.forward_neuron] = 11
+        self.neuron.weights[self.output_neuron] = 11
 
-        self.forward_neuron.bias = 10
-        self.forward_neuron.activation = 10
+        self.output_neuron.bias = 10
+        self.output_neuron.activation = 10
 
         NUM_OUTPUT_NEURONS = 1
 
         assert self.neural_network.cost_function(desired_output=([20] * (NUM_OUTPUT_NEURONS + 1))) == []
         assert self.neural_network.cost_function(desired_output=([20] * (NUM_OUTPUT_NEURONS))) != []
 
-    def test_think(self):
-        """TODO"""
+    def test_backpropagate_single_neuron(self):
+        desired_output: List[int] = [100]
 
-    def test_train(self):
-        """TODO"""
+        costs_before_backprop: List[int] = self.neural_network.cost_function(
+            desired_output=desired_output, input_data=[1]
+        )
+
+        print(f"costs_before_backprop={costs_before_backprop}")
+        assert False
 
 
 if __name__ == "__main__":
