@@ -279,7 +279,7 @@ class TestNeuralNetwork(unittest.TestCase):
         self.output_neuron.bias = 10
         self.output_neuron.activation = 10
 
-        assert self.neural_network.cost_function(desired_output=[20]) == [100]
+        assert self.neural_network.cost_function(desired_output=[20]) == [-10]
 
         applied_new_activation = self.neural_network.cost_function(desired_output=[20], input_data=[1])
 

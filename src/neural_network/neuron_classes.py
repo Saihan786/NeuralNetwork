@@ -85,11 +85,15 @@ class NeuronLayer:
         output_layer: bool = False,
         neurons: Optional[List[Neuron]] = None,
         next_layer: Optional[NeuronLayer] = None,
+        previous_layer: Optional[NeuronLayer] = None,
     ) -> None:
         self.initial_layer = initial_layer
         self.neurons: List[Neuron] = neurons if neurons else self.__initialise_neurons(size)
         if not output_layer:
             self.next_layer = next_layer if next_layer else None
+
+        if not initial_layer:
+            self.previous_layer = previous_layer if previous_layer else None
 
     def __initialise_neurons(self, size) -> List[Neuron]:
         return [Neuron() for i in range(size)]
@@ -156,6 +160,48 @@ class NeuronLayer:
                     if neuron.weights:
                         activation += neuron.activation * neuron.weights[forward_neuron]
                 forward_neuron.activation = activation
+
+    def __proportional_changes(self, costs: List[int]) -> Dict[Neuron, List[float]]:
+        """
+        Requires `self.previous_layer` to be set.
+
+        This method returns a mapping between:
+            - Each neuron,
+
+            - The neuron's list of proportional changes that it wants to make to the previous layer.
+
+        This is how it works:
+            - Consider one neuron of this layer and one neuron in the previous layer:
+                - A `change` value is generated for the previous neuron.
+                    - This is repeated for every previous neuron, then these values are grouped into a list and mapped
+                    to the neuron.
+
+                - The `change` value generated for the previous neuron depends on the strength of its connection to
+                the neuron, the previous neuron's activation value, and the cost for that previous neuron.
+        """
+
+        if not self.previous_layer:
+            return {}
+
+        if not len(costs) == len(self.neurons):
+            raise ValueError(
+                f"The length of the costs list must be the same as the number of neurons in the layer (which is {len(self.neurons)})."
+            )
+
+        changes: Dict[Neuron, List[float]] = {}
+
+        for i in range(len(self.neurons)):
+            neuron = self.neurons[i]
+            overall_change = costs[i] * -1
+
+            proportions: List[float] = [
+                p_neuron.weights[neuron] * p_neuron.activation for p_neuron in self.previous_layer.neurons
+            ]
+            proportions = [p / min(proportions) for p in proportions]
+            total = sum(proportions)
+
+            changes[neuron] = [(p / total) * overall_change for p in proportions]
+        return changes
 
 
 class Network:
@@ -227,7 +273,7 @@ class Network:
                 - Else, the existing output activation values are used.
 
         Cost:
-            - Cost is the sum of all squared differences.
+            - Cost is the list of all squared differences.
             - Each squared difference is between the actual output activation
             value and its corresponding desired activation value.
 
@@ -262,46 +308,31 @@ class Network:
             desired_activation = desired_output[i]
 
             sqr_diff = actual_activation - desired_activation
-            sqr_diff *= sqr_diff
             cost.append(sqr_diff)
 
         return cost
 
-    def train_one_example(self, input_data: List[int], desired_output: int, minimise_cost: bool):
+    def backpropagate(self, costs: List[int]):
         """
-        TODO
-        NOTE: Requires cost_function and backpropagation to be set up.
+        This adjusts the network based on the list of costs. For an output neuron whose cost is `-50`, this function
+        will attempt to increase the activation value in order to make the cost 0 (so the overall change is 50 here).
 
-        Trains the network based on a single training example.
+        First, for each output neuron with its cost, we get its list of proportional changes that it wants to make
+        to the previous layer.
 
-        The cost of input data is found from one training example. If
-        `minimise_cost` is True, then the cost will be minimised to find a
-        gradient vector with backpropagation, which is then applied to the
-        network.
+        We split these proportional changes into:
+            - new_weight_value
+                - This indicates how much the weight of the connection between a previous neuron and the output neuron
+                should increase by (can be negative).
 
-        The network is then considered trained on this one example.
+            - new_activation_value
+                - This indicates how much the activation value of the previous neuron should increase by (can be
+                negative).
 
-        Args:
-            - input_data (): Data that activates certain Neurons in the
-            initial layer.
-            - desired_output (): The output that the network should produce
-            after receiving the `input_data`. Cost is measured against this.
+                - This is determined by repeating this whole process on the previous neuron (finding its `change`
+                values that it wants to apply to its own previous layer).
 
-        Returns:
-            - cost (float): Cost of the network for this training example.
-        """
-
-    def train(self, all_input_data: List[List[int]], all_desired_outputs: List[int]):
-        """
-        TODO
-        Trains the network based on a list of input_data.
-
-        The average cost over all training examples is found, and is passed to
-        the cost minimisation functions.
-
-        Cost minimisation is used alongside backpropagation to find the
-        gradient vector, which is applied to each neuron to adjust all
-        activation values.
-
-        The network is then considered trained.
+            - The overall change is split into 50% `new_weight_value` and 50% new_activation_value.
+                - For an output neuron whose cost is `-50`, the `new_weight_value` is `25` and the
+                `new_activation_value` is `25`.
         """
