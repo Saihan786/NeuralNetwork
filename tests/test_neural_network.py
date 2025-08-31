@@ -80,6 +80,70 @@ def ten_neuron_network():
     }
 
 
+@pytest.fixture
+def five_neuron_network():
+    """Setup for five neuron network tests."""
+
+    # Make three lists of 10 neurons each
+    output_five_neurons = [neuron_classes.Neuron() for _ in range(5)]
+    hidden_five_neurons = [neuron_classes.Neuron() for _ in range(5)]
+    input_five_neurons = [neuron_classes.Neuron() for _ in range(5)]
+
+    # Make the five neuron layers
+    output_layer_five_neurons = neuron_classes.NeuronLayer(size=-1, neurons=output_five_neurons)
+    hidden_layer_five_neurons = neuron_classes.NeuronLayer(
+        size=-1, neurons=hidden_five_neurons, next_layer=output_layer_five_neurons
+    )
+    input_layer_five_neurons = neuron_classes.NeuronLayer(
+        size=-1, neurons=input_five_neurons, next_layer=hidden_layer_five_neurons, initial_layer=True
+    )
+
+    # Set previous layers
+    output_layer_five_neurons.previous_layer = hidden_layer_five_neurons
+    hidden_layer_five_neurons.previous_layer = input_layer_five_neurons
+
+    return {
+        "input_layer": input_layer_five_neurons,
+        "hidden_layer": hidden_layer_five_neurons,
+        "output_layer": output_layer_five_neurons,
+    }
+
+
+@pytest.fixture
+def five_neuron_network_details():
+    input_layer_weights = [
+        [100, 0, 0, 0, 0],
+        [0, 100, 0, 0, 0],
+        [0, 0, 100, 0, 0],
+        [0, 0, 0, 100, 0],
+        [0, 0, 0, 0, 100]
+    ]
+    input_layer_activations = [1, 1, 1, 1, 1]
+
+    hidden_layer_weights = [
+        [100, 0, 0, 0, 0],
+        [0, 100, 0, 0, 0],
+        [0, 0, 100, 0, 0],
+        [0, 0, 0, 100, 0],
+        [0, 0, 0, 0, 100]
+    ]
+    hidden_layer_activations = [1, 1, 1, 1, 1]
+
+    output_layer_costs = [100, 0, 0, 0, 0]
+    output_layer_activations = [1, 1, 1, 1, 1]
+
+    return {
+        'input_layer_weights': input_layer_weights,
+        'input_layer_activations': input_layer_activations,
+        'hidden_layer_weights': hidden_layer_weights,
+        'hidden_layer_activations': hidden_layer_activations,
+        'output_layer_costs': output_layer_costs,
+        'output_layer_activations': output_layer_activations
+    }
+
+    
+
+
 def test_get_layers(single_neuron_network):
     network = single_neuron_network["network"]
     initial_neuron_layer = single_neuron_network["initial_neuron_layer"]
@@ -196,11 +260,48 @@ def test_cost_function_with_incorrect_desired_output(single_neuron_network):
     assert network.cost_function(desired_output=([20] * (NUM_OUTPUT_NEURONS))) != []
 
 
-def test_backpropagate_single_neuron(single_neuron_network):
-    network = single_neuron_network["network"]
-    desired_output: List[int] = [100]
+def test_backpropagate(five_neuron_network, five_neuron_network_details):
+    input_layer = five_neuron_network['input_layer']
+    hidden_layer = five_neuron_network['hidden_layer']
+    output_layer = five_neuron_network['output_layer']
+    
+    input_layer_weights = five_neuron_network_details['input_layer_weights']
+    input_layer_activations = five_neuron_network_details['input_layer_activations']
+    hidden_layer_weights = five_neuron_network_details['hidden_layer_weights']
+    hidden_layer_activations = five_neuron_network_details['hidden_layer_activations']
+    output_layer_activations = five_neuron_network_details['output_layer_activations']
 
-    costs_before_backprop: List[int] = network.cost_function(desired_output=desired_output, input_data=[1])
+    hidden_layer.weights = hidden_layer_weights
+    input_layer.weights = input_layer_weights
 
-    print(f"costs_before_backprop={costs_before_backprop}")
+    for i in range(len(input_layer.neurons)):
+        neuron = input_layer.neurons[i]
+        neuron.activation = input_layer_activations[i]
+
+    for i in range(len(hidden_layer.neurons)):
+        neuron = hidden_layer.neurons[i]
+        neuron.activation = hidden_layer_activations[i]
+
+    for i in range(len(output_layer.neurons)):
+        neuron = output_layer.neurons[i]
+        neuron.activation = output_layer_activations[i]
+
+    network = neuron_classes.Network(
+        layers=[
+            five_neuron_network["input_layer"],
+            five_neuron_network["hidden_layer"],
+            five_neuron_network["output_layer"],
+        ]
+    )
+
+    desired_output: List[int] = [100] + [0]*4
+    costs_before_backprop: List[int] = network.cost_function(desired_output=desired_output, input_data=[1]*5)
+
+    network.backpropagate(costs=costs_before_backprop)
+
+    costs_after_backprop: List[int] = network.cost_function(desired_output=desired_output, input_data=[1]*5)
+    network.print()
+    print(f"costs_before_backprop = {costs_before_backprop}")
+    print(f"costs_after_backprop = {costs_after_backprop}")
+
     assert False

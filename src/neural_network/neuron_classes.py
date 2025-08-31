@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 from typing import Dict, List, Optional
+import numpy as np
+
+class IncorrectInputError(Exception):
+    pass
 
 
 class Neuron:
@@ -42,7 +46,7 @@ class Neuron:
     def __init__(
         self,
         bias=0,
-        weights: Optional[Dict[Neuron, int]] = None,
+        weights: Optional[Dict[Neuron, float]] = None,
     ) -> None:
         self.bias = bias
         self.__weights = weights if weights else {}
@@ -53,7 +57,7 @@ class Neuron:
         return self.__weights
 
     @weights.setter
-    def weights(self, weights: Dict[Neuron, int]) -> None:
+    def weights(self, weights: Dict[Neuron, float]) -> None:
         self.__weights = weights
 
 
@@ -113,7 +117,7 @@ class NeuronLayer:
         return [neuron.weights for neuron in self.neurons]
 
     @weights.setter
-    def weights(self, all_weights: List[List[int]]):
+    def weights(self, all_weights: List[List[float]]):
         if not self.next_layer:
             return
 
@@ -161,7 +165,7 @@ class NeuronLayer:
                         activation += neuron.activation * neuron.weights[forward_neuron]
                 forward_neuron.activation = activation
 
-    def proportional_changes(self, costs: List[int]) -> Dict[Neuron, List[float]]:
+    def proportional_changes(self, costs: List[float]) -> Dict[Neuron, List[float]]:
         """
         Requires `self.previous_layer` to be set.
 
@@ -211,6 +215,13 @@ class NeuronLayer:
                 p_neuron.weights[c_neuron] * p_neuron.activation for p_neuron in self.previous_layer.neurons
             ]
             total = sum(proportions)
+            print("about to do proportions with these values:") 
+            for p_neuron in self.previous_layer.neurons:
+                print("weights =", p_neuron.weights[c_neuron])
+                print("activation =", p_neuron.activation)
+                print() 
+            print(f"proportions={proportions}")
+            print(f"total={total}")
 
             changes[c_neuron] = [0 if total == 0 else (p / total) * overall_change for p in proportions]
         return changes
@@ -246,6 +257,17 @@ class Network:
             self.initial_layer: NeuronLayer = NeuronLayer(size=10)
             self.output_layer: NeuronLayer = NeuronLayer(size=10)
 
+    def print(self):
+        print("\n\n\nprinting network...")
+        for layer in self.layers:
+            print("weights")
+            for weight in layer.weights:
+                print(list(weight.values()))
+            print("activations")
+            print(layer.activations)
+            print()
+        print("printed network!\n\n\n")
+
     def think(self, input_data: List[int]):
         """Return what the network thinks the input data represents, based on
         the current weights and biases."""
@@ -261,12 +283,19 @@ class Network:
         the network will have its activation value set, based on the weights
         and biases already in the network.
 
+        `input_data` must be the same size as the number of neurons in each layer.
+
+        This assumes every layer in the network has the same number of neurons.
+
         Args:
             - input_data (List[int]): Sets activation values for the initial
             layer.
         Returns:
             - A list of activation values of the output layer.
         """
+
+        if len(self.initial_layer.neurons) != len(input_data):
+            raise IncorrectInputError(f"`input_data` should have been length {len(self.initial_layer.neurons)} but was length {len(input_data)}")
 
         self.initial_layer.activate_initial_layer(input_data=input_data)
         for non_output_layer in self.layers[:-1]:
@@ -313,7 +342,7 @@ class Network:
         cost: List[int] = []
         output_neurons: List[Neuron] = self.output_layer.neurons
         if len(output_neurons) != len(desired_output):
-            return []
+            raise IncorrectInputError(f"`desired_output` should have been length {len(output_neurons)} but was length {len(desired_output)}")
 
         for i in range(len(output_neurons)):
             actual_activation = output_neurons[i].activation
@@ -324,7 +353,7 @@ class Network:
 
         return cost
 
-    def backpropagate(self, costs: List[int]):
+    def backpropagate(self, costs: List[float]):
         """
         Activation values and previous layers of the network must be set.
         
@@ -350,3 +379,55 @@ class Network:
             We can now use the costs to find proportional costs of the layer further back, and repeat until the
             initial layer (where we just ignore the half that would have been used for its previous layer).
         """
+
+        output_neurons_to_pchanges: Dict[Neuron, List[float]] = self.output_layer.proportional_changes(costs=costs)
+        output_neuron_pchanges = np.array(list(output_neurons_to_pchanges.values()))
+
+        # transposing - before it was each oneuron with a list of values for each pneuron, now it's each pneuron with
+        # a list of its own changes.
+        pneurons_with_changes = output_neuron_pchanges.T
+
+        halved_changes: List[List[float]] = [[change / 2 for change in r] for r in pneurons_with_changes]
+
+        # assign new weights to pneurons and do prop changes on p_layer
+        p_layer: NeuronLayer = self.output_layer.previous_layer
+        p_layer.weights = halved_changes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        # AND AGAIN - P LAYER
+        print("\n\n\n\n\n\n\n\n\n\n\n\n")
+        print("\n\n\n\n\n\n\n\n\n\n\n\n")
+        print("\n\n\n\n\n\n\n\n\n\n\n\n")
+        print("\n\n\n\n\n\n\n\n\n\n\n\n")
+        print("\n\n\n\n\n\n\n\n\n\n\n\n------------------------------------------")
+        costs = [sum(changes) for changes in halved_changes]
+        neurons_to_pchanges: Dict[Neuron, List[float]] = p_layer.proportional_changes(costs=costs)
+        neuron_pchanges = np.array(list(neurons_to_pchanges.values()))
+        print(f"p_layer_costs={costs}")
+
+        # transposing - before it was each oneuron with a list of values for each pneuron, now it's each pneuron with
+        # a list of its own changes.
+        ineurons_with_changes = neuron_pchanges.T
+        print(f"ineurons_with_changes={ineurons_with_changes}")
+
+        halved_changes: List[List[float]] = [[change / 2 for change in r] for r in ineurons_with_changes]
+
+        # assign new weights to pneurons and do prop changes on p_layer
+        i_neurons: NeuronLayer = p_layer.previous_layer
+        i_neurons.weights = halved_changes
+
+        new_costs: List[float] = [sum(changes) for changes in halved_changes]
+        print(f"new_costs={new_costs}")
