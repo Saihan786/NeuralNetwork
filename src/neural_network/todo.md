@@ -13,6 +13,20 @@ test-driven-development - define a test that describes how backpropagation behav
 
 
 
+TODO:
+   - Need to find out if it's fine to pass in Lists of values to assign to Neurons in Dicts (if a Neuron wants a proportional change for a particular Neuron and indexes it appropriately in the List of proportional changes, is it guaranteed that the indexing of the value in the list will always target the appropriate Neuron?)
+      - Dicts preserve insertion order! So it's fine, but consider a safer alternative in the future.
+         - ('insertion', so not if the dict is generated from an unordered data structure)
+
+   - why are they all at the same memory address? (0x0352E4B0)
+
+      ---------------------------------------------------------------- Captured stdout call ----------------------------------------------------------------
+      {<neural_network.neuron_classes.Neuron object at 0x0352EC90>: 100, <neural_network.neuron_classes.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E900>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E318>: 0}
+      {<neural_network.neuron_classes.Neuron object at 0x0352EC90>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E4B0>: 100, <neural_network.neuron_classes.Neuron object at 0x0352E900>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E318>: 0}
+      {<neural_network.neuron_classes.Neuron object at 0x0352EC90>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E900>: 100, <neural_network.neuron_classes.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E318>: 0}
+      {<neural_network.neuron_classes.Neuron object at 0x0352EC90>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E900>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E3D8>: 100, <neural_network.neuron_classes.Neuron object at 0x0352E318>: 0}
+      {<neural_network.neuron_classes.Neuron object at 0x0352EC90>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E900>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E318>: 100}
+
 
 implementation:
  - neuron layer class is responsible for having the method that takes a neuron and a cost and determines the proportional changes which that neuron wants to make to every neuron in the previous layer.

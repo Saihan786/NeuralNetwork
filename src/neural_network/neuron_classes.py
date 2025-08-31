@@ -49,7 +49,7 @@ class Neuron:
         self.activation = 0
 
     @property
-    def weights(self):
+    def weights(self) -> Dict[Neuron, int]:
         return self.__weights
 
     @weights.setter
@@ -161,23 +161,36 @@ class NeuronLayer:
                         activation += neuron.activation * neuron.weights[forward_neuron]
                 forward_neuron.activation = activation
 
-    def __proportional_changes(self, costs: List[int]) -> Dict[Neuron, List[float]]:
+    def proportional_changes(self, costs: List[int]) -> Dict[Neuron, List[float]]:
         """
         Requires `self.previous_layer` to be set.
 
         This method returns a mapping between:
-            - Each neuron,
+            {
+                Each current neuron (c_neuron)
+                :
+                The c_neuron's list of proportional changes that it wants to make to neurons in the previous
+                layer (p_neurons)
+            }
 
-            - The neuron's list of proportional changes that it wants to make to the previous layer.
+        - A change is the overall impact that the p_neuron has on the c_neuron. It is defined by the p_neuron's
+        activation value and its connection weight to the c_neuron (TODO - incorporate bias)
 
         This is how it works:
-            - Consider one neuron of this layer and one neuron in the previous layer:
-                - A `change` value is generated for the previous neuron.
-                    - This is repeated for every previous neuron, then these values are grouped into a list and mapped
-                    to the neuron.
+            - Consider one c_neuron and one p_neuron:
+                - A `change` value is generated for the p_neuron.
+                    - This is repeated for every p_neuron
+                    
+                    - Then, these `change` values are grouped into a list and mapped to the c_neuron.
 
-                - The `change` value generated for the previous neuron depends on the strength of its connection to
-                the neuron, the previous neuron's activation value, and the cost for that previous neuron.
+        Args:
+            - costs: A cost for each neuron in this layer which indicates 
+        
+        Returns:
+            - Mapping of every neuron in this layer to a list of changes.
+                - Each change is a float corresponding to one neuron in the previous layer.
+
+                - Each change represents what amount this neuron wants to change a neuron in the previous layer by.
         """
 
         if not self.previous_layer:
@@ -191,16 +204,15 @@ class NeuronLayer:
         changes: Dict[Neuron, List[float]] = {}
 
         for i in range(len(self.neurons)):
-            neuron = self.neurons[i]
+            c_neuron = self.neurons[i]
             overall_change = costs[i] * -1
 
             proportions: List[float] = [
-                p_neuron.weights[neuron] * p_neuron.activation for p_neuron in self.previous_layer.neurons
+                p_neuron.weights[c_neuron] * p_neuron.activation for p_neuron in self.previous_layer.neurons
             ]
-            proportions = [p / min(proportions) for p in proportions]
             total = sum(proportions)
 
-            changes[neuron] = [(p / total) * overall_change for p in proportions]
+            changes[c_neuron] = [0 if total == 0 else (p / total) * overall_change for p in proportions]
         return changes
 
 
