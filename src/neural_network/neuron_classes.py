@@ -326,25 +326,27 @@ class Network:
 
     def backpropagate(self, costs: List[int]):
         """
-        This adjusts the network based on the list of costs. For an output neuron whose cost is `-50`, this function
-        will attempt to increase the activation value in order to make the cost 0 (so the overall change is 50 here).
+        Activation values and previous layers of the network must be set.
+        
+        This adjusts the weights (TODO: and biases) of the whole network based on the
+        output layer costs (i.e., deviation from desired activation values for a training example).
 
-        First, for each output neuron with its cost, we get its list of proportional changes that it wants to make
-        to the previous layer.
+        For an output neuron whose cost is `50`, the weight of neurons in the previous layer (p_neurons) will be
+        adjusted to reduce the activation of the output neuron.
+            - The weights of neurons in layers even further back may also be adjusted.
 
-        We split these proportional changes into:
-            - new_weight_value
-                - This indicates how much the weight of the connection between a previous neuron and the output neuron
-                should increase by (can be negative).
+        Steps:
+            - For each output neuron, we get its list of proportional changes that it wants to make to the previous
+            layer.
 
-            - new_activation_value
-                - This indicates how much the activation value of the previous neuron should increase by (can be
-                negative).
+            - We halve every value in the list.
+                - We go through each p_neuron and adjust its weight by the halves in the list.
+                    - For example, if output_1 wants to decrease activation*weight of p_1 by 20, and output_2 wants to
+                    do the same by 30, we do p_1.weights[output_1] -= 10 and p_1.weights[output_2] -= 15
 
-                - This is determined by repeating this whole process on the previous neuron (finding its `change`
-                values that it wants to apply to its own previous layer).
-
-            - The overall change is split into 50% `new_weight_value` and 50% new_activation_value.
-                - For an output neuron whose cost is `-50`, the `new_weight_value` is `25` and the
-                `new_activation_value` is `25`.
+                - We sum the remaining halves for each p_neuron and set that as the cost for that p_neuron.
+                    - For the previous example, the cost for p_1 would be 25
+                
+            We can now use the costs to find proportional costs of the layer further back, and repeat until the
+            initial layer (where we just ignore the half that would have been used for its previous layer).
         """
