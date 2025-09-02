@@ -150,7 +150,7 @@ def test_cost_function_no_input_data(single_neuron_network):
     hidden_layer.weights = [[1.0] for _ in range(1)]
 
     network = neuron_classes.Network(layers = [input_layer, hidden_layer, output_layer])
-    cost: float = network.cost_function(desired_output=[1.0])
+    cost: float = network.cost_function(desired_activation_values=[1.0])
 
     assert cost == 0.0
 
@@ -168,7 +168,7 @@ def test_cost_function_with_input_data(single_neuron_network):
     network = neuron_classes.Network(layers = [input_layer, hidden_layer, output_layer])
 
     # Activation for the three neurons should be 1.0 each
-    cost: float = network.cost_function(desired_output=[1.0], input_data=[1.0])
+    cost: float = network.cost_function(desired_activation_values=[1.0], input_data=[1.0])
 
     assert cost == 0.0
 
@@ -182,7 +182,7 @@ def test_cost_function_with_input_data_ten_neurons(ten_neuron_network):
         neuron.activation = 1
     
     network = neuron_classes.Network(layers=[input_layer, hidden_layer, output_layer])
-    cost_1: float = network.cost_function(desired_output=[3.0]*10)
+    cost_1: float = network.cost_function(desired_activation_values=[3.0]*10)
     network.print()
 
     # (3.0 - 1.0)^2 + (3.0 - 1.0)^2 + ...
@@ -190,7 +190,7 @@ def test_cost_function_with_input_data_ten_neurons(ten_neuron_network):
 
     # calculates new activation values, but all biases and weights are set to 0 so most actvals are set to 0
     # (most, because input layer neurons depend on the input_data, not on the calculation)
-    cost_2: float = network.cost_function(desired_output=[3.0]*10, input_data=[1.0]*10)
+    cost_2: float = network.cost_function(desired_activation_values=[3.0]*10, input_data=[1.0]*10)
 
     # (3.0 - 0.0)^2 + (3.0 - 0.0)^2 + ...
     assert cost_2 == 90.0
@@ -202,12 +202,12 @@ def test_cost_function_with_input_data_ten_neurons(ten_neuron_network):
     for neuron in hidden_layer.neurons + output_layer.neurons:
         neuron.bias = 5
 
-    cost_3: float = network.cost_function(desired_output=[3.0]*10, input_data=[1.0]*10)
+    cost_3: float = network.cost_function(desired_activation_values=[3.0]*10, input_data=[1.0]*10)
 
     assert cost_3 == (3.0 - 155.0) * (3.0 - 155.0) * 10
 
 
-def test_cost_function_with_incorrect_desired_output(single_neuron_network):
+def test_cost_function_with_incorrect_desired_activation_values(single_neuron_network):
     """Basic cost function execution but activation is calculated."""
 
     INCORRECT_NUM_OUTPUT_NEURONS = 2
@@ -220,7 +220,7 @@ def test_cost_function_with_incorrect_desired_output(single_neuron_network):
     network.print()
 
     with pytest.raises(neuron_classes.IncorrectInputError):
-        network.cost_function(desired_output=([0] * (INCORRECT_NUM_OUTPUT_NEURONS)))
+        network.cost_function(desired_activation_values=([0] * (INCORRECT_NUM_OUTPUT_NEURONS)))
 
 
 def test_backpropagate_decreases_cost(five_neuron_network):
@@ -241,7 +241,7 @@ def test_backpropagate_decreases_cost(five_neuron_network):
     network = neuron_classes.Network([input_layer, hidden_layer, output_layer])
 
     cost = network.cost_function(
-        desired_output=[20.0, 0.0, 0.0, 0.0, 0.0],
+        desired_activation_values=[20.0, 0.0, 0.0, 0.0, 0.0],
         input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
     )
     res: List[List[float]] = [cost]
@@ -249,7 +249,7 @@ def test_backpropagate_decreases_cost(five_neuron_network):
         network.print()
         network.backpropagate(cost)
         cost = network.cost_function(
-            desired_output=[20.0, 0.0, 0.0, 0.0, 0.0],
+            desired_activation_values=[20.0, 0.0, 0.0, 0.0, 0.0],
             input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
         )
         res.append(cost)
