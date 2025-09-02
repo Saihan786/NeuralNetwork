@@ -271,6 +271,8 @@ class Network:
                 print(list(weight.values()))
             print("activations")
             print(layer.activations)
+            print("biases")
+            print(layer.biases)
             print()
         print("printed network!\n\n\n")
 
@@ -309,7 +311,7 @@ class Network:
 
         return self.output_layer.activations
 
-    def cost_function(self, desired_output: List[float], input_data: Optional[List[float]] = None) -> List[float]:
+    def cost_function(self, desired_activation_values: List[float], input_data: Optional[List[float]] = None) -> float:
         """
         Overall:
             - This determines the "cost" of the current set of weights and
@@ -331,12 +333,12 @@ class Network:
             activation values are from 100 and 0.
 
         Args:
-            - desired_output (List[int]): A list of expected output activation
+            - desired_activation_values (List[int]): A list of expected output activation
             values corresponding to each output neuron.
 
         Returns:
-            - Empty list if `desired_output` does not contain a value corresponding to each output neuron.
-                - i.e., len(desired_output) MUST EQUAL len(output_neurons)
+            - Empty list if `desired_activation_values` does not contain a value corresponding to each output neuron.
+                - i.e., len(desired_activation_values) MUST EQUAL len(output_neurons)
 
             - cost (List[int]): List of summed sqr differences between expected and actual
             activation values.
@@ -345,19 +347,21 @@ class Network:
         if input_data:
             self.activate_layers(input_data=input_data)
 
-        cost: List[float] = []
+        sqr_diffs: List[float] = []
         output_neurons: List[Neuron] = self.output_layer.neurons
-        if len(output_neurons) != len(desired_output):
-            raise IncorrectInputError(f"`desired_output` should have been length {len(output_neurons)} but was length {len(desired_output)}")
+        if len(output_neurons) != len(desired_activation_values):
+            raise IncorrectInputError(f"`desired_activation_values` should have been length {len(output_neurons)} but was length {len(desired_activation_values)}")
 
         for i in range(len(output_neurons)):
             actual_activation = output_neurons[i].activation
-            desired_activation = desired_output[i]
+            desired_activation = desired_activation_values[i]
 
             sqr_diff = actual_activation - desired_activation
-            cost.append(sqr_diff)
+            sqr_diff *= sqr_diff
 
-        return cost
+            sqr_diffs.append(sqr_diff)
+
+        return sum(sqr_diffs)
 
     def backpropagate(self, costs: List[float]):
         """

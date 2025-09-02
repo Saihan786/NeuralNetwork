@@ -15,15 +15,19 @@ test-driven-development - define a test that describes how backpropagation behav
 
 TODO:
    - (feature/cost-function)
-      - cost should be calculated by using squared differences instead of direct differences between actual and expected values.
-         - This squared difference calculation will be referred to as the cost function, inshaallaah.
+      - (DONE) ACTIONS
+         - Calculate squared diffs and return sum (which represents cost)
+   
+      - LOGIC
+         - cost should be calculated by using squared differences instead of direct differences between actual and expected values.
+            - This squared difference calculation will be referred to as the cost function, inshaallaah.
 
-         - The input to the cost function is the list of activation values for the output neurons and the output is the cost.
-            - The actval list is determined by the input data (we're assuming is unchanged in this example for every iterative calculation of cost during training on one example) and the weights+biases of the network.
+            - The input to the cost function is the list of activation values for the output neurons and the output is the cost.
+               - The actval list is determined by the input data (we're assuming is unchanged in this example for every iterative calculation of cost during training on one example) and the weights+biases of the network.
 
-            - This means the input to the cost function is implicitly the weights+biases and the output is the cost.
+               - This means the input to the cost function is implicitly the weights+biases and the output is the cost.
 
-            - On a graph, the y-value of a point on the cost function is the returned cost, and the x-value is the weights+biases of the network when generating that cost. To minimise the y-value, we find the corresponding w+b through partial differentiation.
+               - On a graph, the y-value of a point on the cost function is the returned cost, and the x-value is the weights+biases of the network when generating that cost. To minimise the y-value, we find the corresponding w+b through partial differentiation.
 
 
    - (feature/backpropagation)
