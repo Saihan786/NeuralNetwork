@@ -31,8 +31,46 @@ TODO:
 
 
    - (feature/backpropagation)
-      - (priority) Backprop should not directly use activation values for proportional changes but should use some derivative
-      
+      - LOGIC
+         - (priority) Backprop should not directly use activation values for proportional changes but should use some derivative
+            - Add `def backpropagation` (which is really `def minimise_cost_function`).
+               - Consider the xy graph (as a simple example - when there are more neurons, there are more dimensions to the graph).
+
+               - We need to move in a downward direction on the graph (i.e., change w+b to reduce the cost).
+                  - Find the gradient (type=List[float], corresponds to w+b for all neurons) at the current position.
+
+                  - The negative version of this gradient can be used to reduce the y-value (by adjusting the w+b).
+                  
+                  - Backpropagation is used to find this negative gradient. Backpropagation returns a list of changes to w and to b over the whole network.
+
+            - (C) (TODO: get a partial derivative relation for how the bias affects the sqrdiff, rn we have one for how weights does that) (TODO: generalise relationships for all sqrdiffs) Backpropagation (List[float]).
+               - Consider a network with all w+b+a set. We want to know the list of changes (List[float]) that we apply to every w+b in the network (a is determined by w+b).
+               
+               - The above list of changes can be thought of as a list of partial derivatives, each of which describes how changes to the sqrdiff for its output neuron are affected by changes to just the weights of the network.
+                  - Split the partial derivative into three partials (which multiply together to make the original):
+                     - How changes to the sqrdiff are affected by the activation value of that output neuron.
+                        - sqrdiff = (actval - desired)^2 -> d_cost = 2 * (actval - desired)
+
+                        - Intuitively, changing the activation value to affect the sqrdiff has a more drastic effect if the difference between the desired actval and the actual actval are large.
+                     
+                     - How changes to that activation value are affected by changes to the formula for that activation value (w*a_prev + b)
+                        - not sure. 3b1b just showed notation for the derivative of the sigmoid function (which i'm not even using) rather than affecting the formula.
+
+                        - Can probably skip this as sigmoid isn't being used here.
+                     
+                     - How changes to the result of that formula (result being a_current) are affected by just the weight of the output neuron.
+                        - a_current = w*a_prev + b -> d_a_current = a_prev
+
+                        - Intuitively, changing the weight to affect a_current has a stronger effect when the actval of the previous neuron is larger. 
+
+                  - The above conclusions mean that changing the weights of the output neuron to change its sqrdiff has a greater effect when
+                     - diff(actval, desired) is larger 
+                     - a_prev is larger
+
+                  - Finally, now we have one change in the list of changes.
+                     - The change is to one weight and is equal to `2 * (actval - desired) * a_prev`
+
+   - Other changes.
       - Generalise backprop logic to more than two layers
       
       - Enable variable size layers
