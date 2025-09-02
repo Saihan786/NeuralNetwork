@@ -14,6 +14,30 @@ test-driven-development - define a test that describes how backpropagation behav
 
 
 TODO:
+   - (feature/cost-function)
+      - (DONE) ACTIONS
+         - Calculate squared diffs and return sum (which represents cost)
+   
+      - LOGIC
+         - cost should be calculated by using squared differences instead of direct differences between actual and expected values.
+            - This squared difference calculation will be referred to as the cost function, inshaallaah.
+
+            - The input to the cost function is the list of activation values for the output neurons and the output is the cost.
+               - The actval list is determined by the input data (we're assuming is unchanged in this example for every iterative calculation of cost during training on one example) and the weights+biases of the network.
+
+               - This means the input to the cost function is implicitly the weights+biases and the output is the cost.
+
+               - On a graph, the y-value of a point on the cost function is the returned cost, and the x-value is the weights+biases of the network when generating that cost. To minimise the y-value, we find the corresponding w+b through partial differentiation.
+
+
+   - (feature/backpropagation)
+      - (priority) Backprop should not directly use activation values for proportional changes but should use some derivative
+      
+      - Generalise backprop logic to more than two layers
+      
+      - Enable variable size layers
+
+
    - Need to find out if it's fine to pass in Lists of values to assign to Neurons in Dicts (if a Neuron wants a proportional change for a particular Neuron and indexes it appropriately in the List of proportional changes, is it guaranteed that the indexing of the value in the list will always target the appropriate Neuron?)
       - Dicts preserve insertion order! So it's fine, but consider a safer alternative in the future.
          - ('insertion', so not if the dict is generated from an unordered data structure)
