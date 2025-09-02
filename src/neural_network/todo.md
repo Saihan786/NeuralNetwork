@@ -43,7 +43,7 @@ TODO:
                   
                   - Backpropagation is used to find this negative gradient. Backpropagation returns a list of changes to w and to b over the whole network.
 
-            - (C) (TODO: generalise relationships for all sqrdiffs) Backpropagation (List[float]).
+            - Backpropagation (List[float]).
                - Consider a network with all w+b+a set. We want to know the list of changes (List[float]) that we apply to every w+b in the network (a is determined by w+b).
                
                - The above list of changes can be thought of as a list of partial derivatives, each of which describes how changes to the sqrdiff for its output neuron are affected by changes to just the weights of the network.
@@ -82,6 +82,23 @@ TODO:
                   
                   - So now, a change to the bias in the list of changes can be calculated as:
                      - 2*(actval-desired)*1 -> `2 * (actval - desired)`
+
+            - (C) (generalising relationships for all sqrdiffs) Keep in mind that the above two functions (in the maths sense of the term) for weight change and bias change only apply for one weight going into an output neuron and one bias of one neuron. To generalise (and find all changes in the list), you iterate this over all w+b in the network.
+               - As an example, to get the list of bias changes for the output neurons, you'd get:
+                  - [
+                     2 * (actval_output_neuron_1 - desired_output_neuron_1),
+                     2 * (actval_output_neuron_2 - desired_output_neuron_2),
+                     ...
+                  ]
+               
+               - List of weight changes going into output_neuron_1:
+                  - [
+                     2 * (actval_output_neuron_1 - desired_output_neuron_1) * a_prev_neuron_1,
+                     2 * (actval_output_neuron_1 - desired_output_neuron_1) * a_prev_neuron_2,
+                     ...
+                  ]
+
+            - (simple) Also keep in mind the resulting list of changes can have a multiplier applied to reduce/increase how much you want the network to move towards a training example in one go.
 
    - Other changes.
       - Generalise backprop logic to more than two layers
