@@ -43,7 +43,7 @@ TODO:
                   
                   - Backpropagation is used to find this negative gradient. Backpropagation returns a list of changes to w and to b over the whole network.
 
-            - (C) (TODO: get a partial derivative relation for how the bias affects the sqrdiff, rn we have one for how weights does that) (TODO: generalise relationships for all sqrdiffs) Backpropagation (List[float]).
+            - (C) (TODO: generalise relationships for all sqrdiffs) Backpropagation (List[float]).
                - Consider a network with all w+b+a set. We want to know the list of changes (List[float]) that we apply to every w+b in the network (a is determined by w+b).
                
                - The above list of changes can be thought of as a list of partial derivatives, each of which describes how changes to the sqrdiff for its output neuron are affected by changes to just the weights of the network.
@@ -69,6 +69,19 @@ TODO:
 
                   - Finally, now we have one change in the list of changes.
                      - The change is to one weight and is equal to `2 * (actval - desired) * a_prev`
+
+               - Now to find a change to a bias (we've defined how we get a change for a weight above).
+                  - Changing the sqrdiff with respect to b (as a partial derivative) can be split into:
+                     - Change sqrdiff with respect to actval (as before)
+                        - sqrdiff = (actval - desired)^2 -> d_sqrdiff = 2 * (actval - desired)
+
+                     - Change actval with respect to b
+                        - actval = w*a + b -> d_actval_respect_to_b = 1
+
+                     - (ignoring the sigmoid function partial derivative)
+                  
+                  - So now, a change to the bias in the list of changes can be calculated as:
+                     - 2*(actval-desired)*1 -> `2 * (actval - desired)`
 
    - Other changes.
       - Generalise backprop logic to more than two layers
