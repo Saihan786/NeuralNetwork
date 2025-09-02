@@ -271,6 +271,8 @@ class Network:
                 print(list(weight.values()))
             print("activations")
             print(layer.activations)
+            print("biases")
+            print(layer.biases)
             print()
         print("printed network!\n\n\n")
 
@@ -309,7 +311,7 @@ class Network:
 
         return self.output_layer.activations
 
-    def cost_function(self, desired_output: List[float], input_data: Optional[List[float]] = None) -> List[float]:
+    def cost_function(self, desired_output: List[float], input_data: Optional[List[float]] = None) -> float:
         """
         Overall:
             - This determines the "cost" of the current set of weights and
@@ -345,7 +347,7 @@ class Network:
         if input_data:
             self.activate_layers(input_data=input_data)
 
-        cost: List[float] = []
+        sqr_diffs: List[float] = []
         output_neurons: List[Neuron] = self.output_layer.neurons
         if len(output_neurons) != len(desired_output):
             raise IncorrectInputError(f"`desired_output` should have been length {len(output_neurons)} but was length {len(desired_output)}")
@@ -355,9 +357,11 @@ class Network:
             desired_activation = desired_output[i]
 
             sqr_diff = actual_activation - desired_activation
-            cost.append(sqr_diff)
+            sqr_diff *= sqr_diff
 
-        return cost
+            sqr_diffs.append(sqr_diff)
+
+        return sum(sqr_diffs)
 
     def backpropagate(self, costs: List[float]):
         """
