@@ -229,37 +229,31 @@ def test_backpropagate_decreases_cost(five_neuron_network):
     output_layer = five_neuron_network['output_layer']
 
     # Set up predictable weights
-    hidden_layer.weights = [[2.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
+    hidden_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
     input_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
-
-    for neuron in input_layer.neurons + hidden_layer.neurons + output_layer.neurons:
-        neuron.activation = 1
-
-    for neuron in output_layer.neurons:
-        neuron.activation = 0
 
     network = neuron_classes.Network([input_layer, hidden_layer, output_layer])
 
-    cost = network.cost_function(
-        desired_activation_values=[20.0, 0.0, 0.0, 0.0, 0.0],
+    cost_before = network.cost_function(
+        desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
         input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
     )
-    res: List[List[float]] = [cost]
-    for i in range(2):
-        network.print()
-        network.backpropagate(cost)
-        cost = network.cost_function(
-            desired_activation_values=[20.0, 0.0, 0.0, 0.0, 0.0],
+
+    print(f"cost_before={cost_before}")
+
+    for i in range(100):
+        network.backpropagate([2.0, 0.0, 0.0, 0.0, 0.0])
+        
+        new_cost = network.cost_function(
+            desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
             input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
         )
-        res.append(cost)
-        network.print()
-    
-    print("\n\nfinal costs")
-    for cost in res:
-        print(f"cost = {cost}")
-        
+        print(f"new_cost={new_cost}")
+
     assert False
+
+    
+    
 
 
 def test_backpropagate_output_layer(five_neuron_network):

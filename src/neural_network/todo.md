@@ -100,6 +100,8 @@ TODO:
 
             - (simple) Also keep in mind the resulting list of changes can have a multiplier applied to reduce/increase how much you want the network to move towards a training example in one go.
 
+         - This partial derivation has to be applied differently depending on whatever layer you're going to. The above is for the output layer. For the directly previous layer, you must find how cost is affected when a weight in the previous layer is affected (split into 6 partial derivatives, starting with dC / dA(OutputLayer)). How can this be generalised?
+
    - Other changes.
       - Generalise backprop logic to more than two layers
       
