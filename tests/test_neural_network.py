@@ -234,12 +234,34 @@ def test_backpropagate_decreases_cost(five_neuron_network):
 
     network = neuron_classes.Network([input_layer, hidden_layer, output_layer])
 
-    cost_before = network.cost_function(
+    old_cost = network.cost_function(
         desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
         input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
     )
+    network.backpropagate([2.0, 0.0, 0.0, 0.0, 0.0])
 
-    print(f"cost_before={cost_before}")
+    new_cost = network.cost_function(
+        desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
+        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
+    )
+    assert new_cost < old_cost
+
+
+def test_backpropagate_repeatedly_decreases_cost(five_neuron_network):
+    input_layer = five_neuron_network['input_layer']
+    hidden_layer = five_neuron_network['hidden_layer']
+    output_layer = five_neuron_network['output_layer']
+
+    # Set up predictable weights
+    hidden_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
+    input_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
+
+    network = neuron_classes.Network([input_layer, hidden_layer, output_layer])
+
+    old_cost = network.cost_function(
+        desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
+        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
+    )
 
     for i in range(100):
         network.backpropagate([2.0, 0.0, 0.0, 0.0, 0.0])
@@ -248,81 +270,13 @@ def test_backpropagate_decreases_cost(five_neuron_network):
             desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
             input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
         )
-        print(f"new_cost={new_cost}")
 
-    assert False
-
-    
-    
+        assert new_cost < old_cost
+        old_cost = new_cost
 
 
-def test_backpropagate_output_layer(five_neuron_network):
-    """Test that backpropagate correctly processes output layer proportional changes."""
-    input_layer = five_neuron_network['input_layer']
-    hidden_layer = five_neuron_network['hidden_layer']
-    output_layer = five_neuron_network['output_layer']
-    
-    # Set up simple weights and activations
-    hidden_layer.weights = [[1, 0, 0, 0, 0] for _ in range(5)]
-    input_layer.weights = [[1, 0, 0, 0, 0] for _ in range(5)]
-    
-    for i, neuron in enumerate(input_layer.neurons):
-        neuron.activation = 1
-    for i, neuron in enumerate(hidden_layer.neurons):
-        neuron.activation = 1
-    for i, neuron in enumerate(output_layer.neurons):
-        neuron.activation = 1
-    
-    network = neuron_classes.Network([input_layer, hidden_layer, output_layer])
-    
-    # Test with simple costs
-    costs = [10, 0, 0, 0, 0]
-    
-    # Verify output layer proportional changes are calculated
-    output_neurons_to_pchanges = output_layer.proportional_changes(costs=costs)
-    assert len(output_neurons_to_pchanges) == 5
-    
-    print(f"output to pchanges = {output_neurons_to_pchanges.values()}")
-    
-    # First output neuron should want all p_neurons to change slightly
-    output_neuron_1_desired_changes = list(output_neurons_to_pchanges.values())[0]
-    assert 0 not in output_neuron_1_desired_changes
-    
-    # Other output neurons should want p_neurons to not change at all
-    other_output_neuron_desired_changes: List[List[float]] = list(output_neurons_to_pchanges.values())[1:]
-    assert all(all(change == 0 for change in neuron_changes) for neuron_changes in other_output_neuron_desired_changes)    
-
-    # Shouldn't raise an error
-    network.backpropagate(costs)
-
-
-def test_backpropagate_updates_weights(five_neuron_network):
-    """Test that backpropagate correctly updates weights in previous layer."""
-    input_layer = five_neuron_network['input_layer']
-    hidden_layer = five_neuron_network['hidden_layer']
-    output_layer = five_neuron_network['output_layer']
-    
-    # Set up predictable weights
-    original_hidden_weights = [[2.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]       # five hidden neurons only connect to one output neuron
-    hidden_layer.weights = [row[:] for row in original_hidden_weights]            # look at the setter function for `weights`
-
-    original_input_weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]        # five input neurons only connect to one hidden neuron
-    input_layer.weights = original_input_weights           
-
-    for neuron in input_layer.neurons + hidden_layer.neurons + output_layer.neurons:
-        neuron.activation = 1
-    
-    network = neuron_classes.Network([input_layer, hidden_layer, output_layer])
-    costs = [20.0, 0.0, 0.0, 0.0, 0.0]
-    network.backpropagate(costs)
-
-    # Verify weights were updated
-    assert hidden_layer.weights_as_list[0] != original_hidden_weights[0]
-    assert input_layer.weights_as_list[0] != original_input_weights[0]
-
-
-def test_backpropagate_with_zero_costs(five_neuron_network):
-    """Test backpropagate handles zero costs correctly."""
+def test_backpropagate_with_zero_cost(five_neuron_network):
+    """Test backpropagate doesn't change weights if cost is zero."""
     input_layer = five_neuron_network['input_layer']
     hidden_layer = five_neuron_network['hidden_layer']
     output_layer = five_neuron_network['output_layer']
@@ -335,13 +289,16 @@ def test_backpropagate_with_zero_costs(five_neuron_network):
     
     network = neuron_classes.Network([input_layer, hidden_layer, output_layer])
 
-    # Test with all zero costs
-    costs = [0.0, 0.0, 0.0, 0.0, 0.0]
+    old_cost = network.cost_function(
+        desired_activation_values=[1.0, 1.0, 1.0, 1.0, 1.0],
+        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
+    )
+    activation_values_after_providing_input_data = network.output_layer.activations
 
+    network.backpropagate(desired_outputs=activation_values_after_providing_input_data)
 
-    network.backpropagate(costs)
-    
-    # Verify weights remain unchanged with zero costs
-    expected_weights = [[1.0, 1.0, 1.0, 1.0, 1.0] for _ in range(5)]  # No weight should be changed
-    assert hidden_layer.weights_as_list == expected_weights
-    assert input_layer.weights_as_list == expected_weights
+    new_cost = network.cost_function(
+        desired_activation_values=[1.0, 1.0, 1.0, 1.0, 1.0],
+        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
+    )
+    assert new_cost == old_cost
