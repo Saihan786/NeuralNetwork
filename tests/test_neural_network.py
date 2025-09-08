@@ -90,6 +90,49 @@ def five_neuron_network():
     }
 
 
+@pytest.fixture
+def ten_layer_network():
+    # Make ten lists of 5 neurons each
+    output_five_neurons = [neuron_classes.Neuron() for _ in range(5)]
+    hidden_five_neurons = [neuron_classes.Neuron() for _ in range(5)]
+    input_five_neurons = [neuron_classes.Neuron() for _ in range(5)]
+
+    # Make the ten neuron layers
+    layers = [neuron_classes.NeuronLayer(
+        size=-1,
+        neurons=[neuron_classes.Neuron() for _ in range(5)],
+        next_layer=None,
+        initial_layer=True if i == 0 else False,
+        previous_layer=None
+    ) for i in range(10)]
+
+    # Set previous layers
+    for i in range(1, 10):
+        layers[i].previous_layer = layers[i - 1]
+
+    # Set next layers
+    for i in range(0, 9):
+        layers[i].next_layer = layers[i + 1]
+
+    # Set up network
+    network = neuron_classes.Network(layers=layers)
+
+    return {
+        "network": network,
+        "layers": layers,
+        "layer_0": layers[0],
+        "layer_1": layers[1],
+        "layer_2": layers[2],
+        "layer_3": layers[3],
+        "layer_4": layers[4],
+        "layer_5": layers[5],
+        "layer_6": layers[6],
+        "layer_7": layers[7],
+        "layer_8": layers[8],
+        "layer_9": layers[9],
+    }
+
+
 def test_get_layers(single_neuron_network):
     network = single_neuron_network["network"]
     initial_neuron_layer = single_neuron_network["initial_neuron_layer"]
@@ -223,7 +266,7 @@ def test_cost_function_with_incorrect_desired_activation_values(single_neuron_ne
         network.cost_function(desired_activation_values=([0] * (INCORRECT_NUM_OUTPUT_NEURONS)))
 
 
-def test_backpropagate_decreases_cost(five_neuron_network):
+def test_backpropagate_weights_decreases_cost(five_neuron_network):
     input_layer = five_neuron_network['input_layer']
     hidden_layer = five_neuron_network['hidden_layer']
     output_layer = five_neuron_network['output_layer']
@@ -238,7 +281,7 @@ def test_backpropagate_decreases_cost(five_neuron_network):
         desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
         input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
     )
-    network.backpropagate([2.0, 0.0, 0.0, 0.0, 0.0])
+    network.backpropagate_weights([2.0, 0.0, 0.0, 0.0, 0.0])
 
     new_cost = network.cost_function(
         desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
@@ -247,7 +290,7 @@ def test_backpropagate_decreases_cost(five_neuron_network):
     assert new_cost < old_cost
 
 
-def test_backpropagate_repeatedly_decreases_cost(five_neuron_network):
+def test_backpropagate_weights_repeatedly_decreases_cost(five_neuron_network):
     input_layer = five_neuron_network['input_layer']
     hidden_layer = five_neuron_network['hidden_layer']
     output_layer = five_neuron_network['output_layer']
@@ -264,7 +307,7 @@ def test_backpropagate_repeatedly_decreases_cost(five_neuron_network):
     )
 
     for i in range(100):
-        network.backpropagate([2.0, 0.0, 0.0, 0.0, 0.0])
+        network.backpropagate_weights([2.0, 0.0, 0.0, 0.0, 0.0])
         
         new_cost = network.cost_function(
             desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
@@ -275,8 +318,47 @@ def test_backpropagate_repeatedly_decreases_cost(five_neuron_network):
         old_cost = new_cost
 
 
-def test_backpropagate_with_zero_cost(five_neuron_network):
-    """Test backpropagate doesn't change weights if cost is zero."""
+def test_backpropagate_weights_ten_layers(ten_layer_network):
+    """
+    This fails as the learning rate needs to be very precise (a particular number of dps) which is different to the
+    learning rate required for networks with smaller numbers of layers.
+    
+    The reason for this high precision is because activation values increase rapidly as the number of layers increases.
+    
+    To remedy this, the sigmoid function would force activation values to be within 0 and 1 so a consistent learning
+    rate can be applied to networks of varying layers. This would affect the activation process and backpropagation (a
+    derivative to the sigmoid function must be applied). TBD.
+    """
+    
+    network = ten_layer_network['network']
+
+    for layer in network.layers:
+        layer.weights = [[1.0] * 5] * 10
+        for neuron in layer.neurons:
+            neuron.bias = 0.0
+
+    old_cost = network.cost_function(
+        desired_activation_values=[0.0, 0.0, 0.0, 0.0, 0.0],
+        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
+    )
+    
+
+    network.backpropagate_weights([0.0, 0.0, 0.0, 0.0, 0.0])
+    new_cost = network.cost_function(
+        desired_activation_values=[0.0, 0.0, 0.0, 0.0, 0.0],
+        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
+    )
+
+    print(f"old_cost={old_cost}")
+    print(f"new_cost={new_cost}")
+
+    assert new_cost < old_cost
+    assert False
+    
+
+
+def test_backpropagate_weights_with_zero_cost(five_neuron_network):
+    """Test backpropagate_weights doesn't change weights if cost is zero."""
     input_layer = five_neuron_network['input_layer']
     hidden_layer = five_neuron_network['hidden_layer']
     output_layer = five_neuron_network['output_layer']
@@ -295,7 +377,7 @@ def test_backpropagate_with_zero_cost(five_neuron_network):
     )
     activation_values_after_providing_input_data = network.output_layer.activations
 
-    network.backpropagate(desired_outputs=activation_values_after_providing_input_data)
+    network.backpropagate_weights(desired_outputs=activation_values_after_providing_input_data)
 
     new_cost = network.cost_function(
         desired_activation_values=[1.0, 1.0, 1.0, 1.0, 1.0],

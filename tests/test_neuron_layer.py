@@ -54,38 +54,38 @@ def small_neuron_layers(forward_neuron_layer_small, neuron_layer_small, initial_
 
 
 @pytest.fixture
-def forward_neuron_layer_medium():
+def output_neuron_layer_medium():
     return neuron_classes.NeuronLayer(
         size=5,
     )
 
 
 @pytest.fixture
-def neuron_layer_medium(forward_neuron_layer_medium):
+def hidden_neuron_layer_medium(output_neuron_layer_medium):
     return neuron_classes.NeuronLayer(
         size=5,
-        next_layer=forward_neuron_layer_medium,
+        next_layer=output_neuron_layer_medium,
     )
 
 
 @pytest.fixture
-def initial_neuron_layer_medium(neuron_layer_medium):
+def input_neuron_layer_medium(hidden_neuron_layer_medium):
     return neuron_classes.NeuronLayer(
         size=5,
-        next_layer=neuron_layer_medium,
+        next_layer=hidden_neuron_layer_medium,
         initial_layer=True,
     )
 
 
 @pytest.fixture
-def medium_neuron_layers(forward_neuron_layer_medium, neuron_layer_medium, initial_neuron_layer_medium):
-    forward_neuron_layer_medium.previous_layer = neuron_layer_medium
-    neuron_layer_medium.previous_layer = initial_neuron_layer_medium
+def neuron_layers_size_5(output_neuron_layer_medium, hidden_neuron_layer_medium, input_neuron_layer_medium):
+    output_neuron_layer_medium.previous_layer = hidden_neuron_layer_medium
+    hidden_neuron_layer_medium.previous_layer = input_neuron_layer_medium
     
     return {
-        'forward_neuron_layer_medium': forward_neuron_layer_medium,
-        'neuron_layer_medium': neuron_layer_medium,
-        'initial_neuron_layer_medium': initial_neuron_layer_medium,
+        'output_neuron_layer_medium': output_neuron_layer_medium,
+        'hidden_neuron_layer_medium': hidden_neuron_layer_medium,
+        'input_neuron_layer_medium': input_neuron_layer_medium,
     }
 
 
@@ -183,119 +183,16 @@ def test_neuron_layer_activate_next_layer():
     assert forward_large_layer.activations == [7, 14, 21]
 
 
-@pytest.mark.parametrize(
-    ["weights", "activations", "costs", "expected_changes_for_pneurons"],
-    [
-        (
-            # basic example
-            [
-                [100, 0, 0, 0, 0],
-                [0, 100, 0, 0, 0],
-                [0, 0, 100, 0, 0],
-                [0, 0, 0, 100, 0],
-                [0, 0, 0, 0, 100],
-            ],                          # weights from previous layer to current layer
-            [1, 1, 1, 1, 1],            # activations of previous layer neurons
-            [100, 0, 0, 0, 0],          # costs of current layer neurons
-            [
-                [-100, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-            ],                          # only cneuron_1 wants pneuron_1 to change
-        ),
+def test_proportional_changes(neuron_layers_size_5):
+    current_layer: neuron_classes.NeuronLayer = neuron_layers_size_5['output_neuron_layer_medium']
+    previous_layer: neuron_classes.NeuronLayer = neuron_layers_size_5['hidden_neuron_layer_medium']
 
-        (
-            # check that pneurons with larger weight are given higher change values
-            [
-                [100, 0, 0, 0, 0],
-                [10, 0, 0, 0, 0],
-                [20, 0, 0, 0, 0],
-                [30, 0, 0, 0, 0],
-                [40, 0, 0, 0, 0],
-            ],                          # each previous neuron is only tied to the first current neuron
-            [1, 1, 1, 1, 1],            # activations of previous layer neurons
-            [100, 0, 0, 0, 0],          # costs of current layer neurons
-            [
-                [-50.0, -5.0, -10.0, -15.0, -20.0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-            ],                          # cneuron_1 wants some pneurons to change more than others based on weight
-        ),
+    previous_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
+    for neuron in previous_layer.neurons + current_layer.neurons:
+        neuron.activation = 1
+    
+    cost = 10
+    
+    assert False
 
-        (
-            # check that pneurons with larger activation are given higher change values
-            [
-                [100, 0, 0, 0, 0],
-                [100, 0, 0, 0, 0],
-                [100, 0, 0, 0, 0],
-                [100, 0, 0, 0, 0],
-                [100, 0, 0, 0, 0],
-            ],                          # each previous neuron is only tied to the first current neuron, each by the same amount
-            [100, 10, 20, 30, 40],            # activations of previous layer neurons
-            [100, 0, 0, 0, 0],          # costs of current layer neurons
-            [
-                [-50.0, -5.0, -10.0, -15.0, -20.0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-            ],                          # cneuron_1 wants some pneurons to change more than others based on activation
-        ),
-
-        (
-            # check that cneurons with no connections do not want any change if their cost is 0
-            [
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-            ],                          # no connections between neurons
-            [10, 1, 2, 3, 4],           # no activations
-            [100, 0, 0, 0, 0],          # costs of current layer neurons
-            [
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-            ],                          # each cneuron wants a change of 0 for each pneuron
-        ),
-        (
-            # multiple costs
-            [
-                [50, 50, 0, 0, 0],
-                [0, 50, 50, 0, 0],
-                [0, 0, 50, 50, 0],
-                [0, 0, 0, 50, 50],
-                [50, 0, 0, 0, 50],
-            ],                          # pneuron_1 and pneuron_5 are both connected to cneuron_1
-            [0.5, 0.5, 0.5, 0.5, 0.5],  # activations of previous layer neurons
-            [50, 50, 0, 0, 0],          # costs of current layer neurons
-            [
-                [-25.0, -0.0, -0.0, -0.0, -25.0],
-                [-25.0, -25.0, -0.0, -0.0, -0.0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-            ],                          # cneuron_1 and cneuron_2 both want some pneurons to change
-        ),
-    ]
-)
-def test_proportional_changes(medium_neuron_layers, weights, activations, costs, expected_changes_for_pneurons):
-    current_layer: neuron_classes.NeuronLayer = medium_neuron_layers['forward_neuron_layer_medium']
-    previous_layer: neuron_classes.NeuronLayer = medium_neuron_layers['neuron_layer_medium']
-
-    previous_layer.weights = weights
-
-    for i in range(len(previous_layer.neurons)):
-        pneuron = previous_layer.neurons[i]
-        pneuron.activation = activations[i]
-
-    cneurons_to_changes = current_layer.proportional_changes(costs=costs)
-
-    assert list(cneurons_to_changes.values()) == expected_changes_for_pneurons
+    # cneurons_to_changes = current_layer.proportional_changes(costs=costs)

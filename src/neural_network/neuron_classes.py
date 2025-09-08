@@ -98,6 +98,8 @@ class NeuronLayer:
 
         if not initial_layer:
             self.previous_layer = previous_layer if previous_layer else None
+        else:
+            self.previous_layer = None
 
     def __initialise_neurons(self, size) -> List[Neuron]:
         return [Neuron() for i in range(size)]
@@ -239,6 +241,17 @@ class NeuronLayer:
             changes[c_neuron] = [0 if total == 0 else (p / total) * overall_change for p in proportions]
         return changes
 
+    def print(self):
+        print("\n\n\nprinting layer...")
+        print("weights")
+        for weight in self.weights:
+            print(list(weight.values()))
+        print("activations")
+        print(self.activations)
+        print("biases")
+        print(self.biases)
+        print()
+
 
 class Network:
     """
@@ -370,29 +383,65 @@ class Network:
 
         return sqr_diffs
 
-    def backpropagate(self, desired_outputs: List[float]):
+    def backpropagate_weights(self, desired_outputs: List[float]):
         """
-        Generates a list of changes to each weight and bias in the network, then applies them.
+        Generates a list of changes to each weight in the network, then applies them.
 
-        For each layer of weights, to find the changes to weight, we need:
-            - The weight itself
+        For each layer of weights, to find the changes to weight that we want to apply, we need:
+            - The weight itself.
 
-            - The activation value of the neuron the weight is coming from
+            - The activation value of the neuron the weight is coming from.
 
-            - The derivative of the total cost with respect to the activation value of the neuron the weight is connecting to
+            - The derivative of the total cost with respect to the activation value of the neuron the weight is connecting to.
                 - This is generated at each layer and propagated backwards for ease.
 
-                - For the output layer, this is just the squared difference for an output neuron.                
+                - For the output layer, this is just the squared difference for an output neuron.
+        
+        These values are then used to calculate the weight changes for the weights in a neuron layer. We then track the
+        derivative values we need for the previous layer and repeat the process.
         """
 
-        effect_of_actval_on_cost: Dict[Neuron, float] = {}
+
+
+
+        def weight_changes_for_layer(neuron_to_weight_changes: Dict[Neuron, Dict[Neuron, float]], layer_before_weights: NeuronLayer, effect_of_actval_on_cost: Dict[Neuron, float]):
+            """
+            This function updates `neuron_to_weight_changes` with the changes for the weights that lead into the
+            provided `NeuronLayer`.
+
+            Args:
+                - layer_before_weights: The layer before the weights.
+                - effect_of_actval_on_cost: A mapping between each neuron in the layer after the weights and the
+                (indirect) effect of that neuron's activation value on the cost.
+            """
+
+            neurons_with_connections = layer_before_weights.neurons_with_connections
+
+            for neuron_before_weight, connection in neurons_with_connections.items():
+                weight_changes = {}
+                
+                for neuron_after_weight, weight_to_adjust in connection.items():
+                    effect = 0.0
+                    for indirectly_affected_neuron, _ in neuron_after_weight.weights.items():
+                        effect += effect_of_actval_on_cost[indirectly_affected_neuron] * neuron_after_weight.weights[indirectly_affected_neuron]
+
+                    effect_of_actval_on_cost[neuron_after_weight] = effect
+
+                    weight_changes[neuron_after_weight] = effect_of_actval_on_cost[neuron_after_weight] * neuron_before_weight.activation
+                
+                neuron_to_weight_changes[neuron_before_weight] = weight_changes
+
+
+
+
+
+        neuron_to_weight_changes = {}
+        effect_of_actval_on_cost = {}
         output_neuron_to_desired_outputs: Dict[Neuron, float] = {
             self.output_layer.neurons[i]: desired_outputs[i] for i in range(len(self.output_layer.neurons))
         }
 
-        neuron_to_weight_changes: Dict[Neuron, Dict[Neuron, float]] = {}
-        neurons_with_connections: dict = self.output_layer.previous_layer.neurons_with_connections
-
+        neurons_with_connections = self.output_layer.previous_layer.neurons_with_connections
         for p_neuron, connection in neurons_with_connections.items():
             weight_changes = {}
             for o_neuron, weight in connection.items():
@@ -401,25 +450,66 @@ class Network:
                 effect_of_actval_on_cost[o_neuron] = 2 * (desired_output - o_neuron.activation)
 
                 weight_changes[o_neuron] = effect_of_actval_on_cost[o_neuron] * p_neuron.activation
+                print(f"weight_changes={weight_changes}")
 
             neuron_to_weight_changes[p_neuron] = weight_changes
 
 
-        neurons_with_connections: dict = self.output_layer.previous_layer.previous_layer.neurons_with_connections
+        layer_before_weights = self.output_layer.previous_layer.previous_layer
+        while layer_before_weights:
+            weight_changes_for_layer(
+                neuron_to_weight_changes=neuron_to_weight_changes,
+                layer_before_weights=layer_before_weights,
+                effect_of_actval_on_cost=effect_of_actval_on_cost
+            )
+            layer_before_weights = layer_before_weights.previous_layer
 
-        for q_neuron, connection in neurons_with_connections.items():
-            weight_changes = {}
-            
-            for p_neuron, weight_to_p in connection.items():
-                effect = 0.0
-                for o_neuron, weight_to_o in p_neuron.weights.items():
-                    effect += effect_of_actval_on_cost[o_neuron] * weight_to_p
 
-                effect_of_actval_on_cost[p_neuron] = effect
-                weight_changes[p_neuron] = effect_of_actval_on_cost[p_neuron] * q_neuron.activation
-            
-            neuron_to_weight_changes[q_neuron] = weight_changes
-        
+
         for neuron, weight_changes in neuron_to_weight_changes.items():
+            # print(f"{neuron}: {weight_changes}")
+            
             for target_neuron, change in weight_changes.items():
-                neuron.weights[target_neuron] += change * 0.01  # Learning rate
+                original = neuron.weights[target_neuron]
+                neuron.weights[target_neuron] += change * 0.0001  # Learning rate
+                x=neuron.weights[target_neuron]
+
+                print(f"original={original} - change={change} - changed_val={x}")
+
+
+
+
+
+
+
+
+
+
+
+
+        # neuron_to_weight_changes: Dict[Neuron, Dict[Neuron, float]] = {}
+        # effect_of_actval_on_cost: Dict[Neuron, float] = {}
+
+
+
+
+        # neurons_with_connections: List[Dict[Neuron, float]] = {}
+
+        # neurons_with_connections = self.output_layer.previous_layer.previous_layer.neurons_with_connections
+
+        # for q_neuron, connection in neurons_with_connections.items():
+        #     weight_changes = {}
+            
+        #     for p_neuron, weight_to_p in connection.items():
+        #         effect = 0.0
+        #         for o_neuron, weight_to_o in p_neuron.weights.items():
+        #             effect += effect_of_actval_on_cost[o_neuron] * weight_to_p
+
+        #         effect_of_actval_on_cost[p_neuron] = effect
+        #         weight_changes[p_neuron] = effect_of_actval_on_cost[p_neuron] * q_neuron.activation
+            
+        #     neuron_to_weight_changes[q_neuron] = weight_changes
+        
+        # for neuron, weight_changes in neuron_to_weight_changes.items():
+        #     for target_neuron, change in weight_changes.items():
+        #         neuron.weights[target_neuron] += change * 0.01  # Learning rate

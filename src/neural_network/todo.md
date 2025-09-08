@@ -31,8 +31,10 @@ TODO:
 
 
    - (feature/backpropagation)
+      - Split apart backprop logic into the neuron layer
       - LOGIC
-         - (priority) Backprop should not directly use activation values for proportional changes but should use some derivative
+         - (Add sigmoid to prevent crazy activation values for high numbers of layers)
+         - (priority) (DONE for weights) Backprop should not directly use activation values for proportional changes but should use some derivative
             - Add `def backpropagation` (which is really `def minimise_cost_function`).
                - Consider the xy graph (as a simple example - when there are more neurons, there are more dimensions to the graph).
 
@@ -43,7 +45,7 @@ TODO:
                   
                   - Backpropagation is used to find this negative gradient. Backpropagation returns a list of changes to w and to b over the whole network.
 
-            - Backpropagation (List[float]).
+            - (DONE for weights) Backpropagation (List[float]).
                - Consider a network with all w+b+a set. We want to know the list of changes (List[float]) that we apply to every w+b in the network (a is determined by w+b).
                
                - The above list of changes can be thought of as a list of partial derivatives, each of which describes how changes to the sqrdiff for its output neuron are affected by changes to just the weights of the network.
@@ -100,7 +102,7 @@ TODO:
 
             - (simple) Also keep in mind the resulting list of changes can have a multiplier applied to reduce/increase how much you want the network to move towards a training example in one go.
 
-         - This partial derivation has to be applied differently depending on whatever layer you're going to. The above is for the output layer. For the directly previous layer, you must find how cost is affected when a weight in the previous layer is affected (split into 6 partial derivatives, starting with dC / dA(OutputLayer)). How can this be generalised?
+         - (DONE) This partial derivation has to be applied differently depending on whatever layer you're going to. The above is for the output layer. For the directly previous layer, you must find how cost is affected when a weight in the previous layer is affected (split into 6 partial derivatives, starting with dC / dA(OutputLayer)). How can this be generalised?
 
    - Other changes.
       - Generalise backprop logic to more than two layers
@@ -112,7 +114,7 @@ TODO:
       - Dicts preserve insertion order! So it's fine, but consider a safer alternative in the future.
          - ('insertion', so not if the dict is generated from an unordered data structure)
 
-   - why are they all at the same memory address? (0x0352E4B0)
+   - (A - if you look carefully, each dictionary has a weight to each neuron in the next layer, so each dictionary points to 5 same memory addresses) why are they all at the same memory address? (0x0352E4B0)
 
       ---------------------------------------------------------------- Captured stdout call ----------------------------------------------------------------
       {<neural_network.neuron_classes.Neuron object at 0x0352EC90>: 100, <neural_network.neuron_classes.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E900>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E318>: 0}
