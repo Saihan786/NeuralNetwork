@@ -1,25 +1,25 @@
 import pytest
-from neural_network import neuron_classes as neuron_classes
+from neural_network import neuron_class as neuron_class
 
 
 @pytest.fixture
 def initial_neuron():
-    return neuron_classes.Neuron()
+    return neuron_class.Neuron()
 
 
 @pytest.fixture
 def neuron():
-    return neuron_classes.Neuron()
+    return neuron_class.Neuron()
 
 
 @pytest.fixture
 def forward_neuron():
-    return neuron_classes.Neuron()
+    return neuron_class.Neuron()
 
 
 @pytest.fixture
 def forward_neuron_layer_small(forward_neuron):
-    return neuron_classes.NeuronLayer(
+    return neuron_class.BaseNeuronLayer(
         size=-1,
         neurons=[forward_neuron],
     )
@@ -27,7 +27,7 @@ def forward_neuron_layer_small(forward_neuron):
 
 @pytest.fixture
 def neuron_layer_small(neuron, forward_neuron_layer_small):
-    return neuron_classes.NeuronLayer(
+    return neuron_class.BaseNeuronLayer(
         size=-1,
         neurons=[neuron],
         next_layer=forward_neuron_layer_small,
@@ -36,7 +36,7 @@ def neuron_layer_small(neuron, forward_neuron_layer_small):
 
 @pytest.fixture
 def initial_neuron_layer_small(initial_neuron, neuron_layer_small):
-    return neuron_classes.NeuronLayer(
+    return neuron_class.BaseNeuronLayer(
         size=-1,
         neurons=[initial_neuron],
         next_layer=neuron_layer_small,
@@ -55,14 +55,14 @@ def small_neuron_layers(forward_neuron_layer_small, neuron_layer_small, initial_
 
 @pytest.fixture
 def output_neuron_layer_medium():
-    return neuron_classes.NeuronLayer(
+    return neuron_class.BaseNeuronLayer(
         size=5,
     )
 
 
 @pytest.fixture
 def hidden_neuron_layer_medium(output_neuron_layer_medium):
-    return neuron_classes.NeuronLayer(
+    return neuron_class.BaseNeuronLayer(
         size=5,
         next_layer=output_neuron_layer_medium,
     )
@@ -70,7 +70,7 @@ def hidden_neuron_layer_medium(output_neuron_layer_medium):
 
 @pytest.fixture
 def input_neuron_layer_medium(hidden_neuron_layer_medium):
-    return neuron_classes.NeuronLayer(
+    return neuron_class.BaseNeuronLayer(
         size=5,
         next_layer=hidden_neuron_layer_medium,
         initial_layer=True,
@@ -90,7 +90,7 @@ def neuron_layers_size_5(output_neuron_layer_medium, hidden_neuron_layer_medium,
 
 
 def test_initialise_with_size():
-    five_neuron_layer = neuron_classes.NeuronLayer(size=5)
+    five_neuron_layer = neuron_class.BaseNeuronLayer(size=5)
     assert len(five_neuron_layer.neurons) == 5
 
 
@@ -152,14 +152,14 @@ def test_set_weights(neuron_layer_small, neuron, forward_neuron):
 
 def test_neuron_layer_activate_next_layer():
     size = 3
-    fneurons = [neuron_classes.Neuron(bias=i) for i in range(1, size + 1)]
-    forward_large_layer = neuron_classes.NeuronLayer(
+    fneurons = [neuron_class.Neuron(bias=i) for i in range(1, size + 1)]
+    forward_large_layer = neuron_class.BaseNeuronLayer(
         size=size,
         neurons=fneurons,
     )
     assert forward_large_layer.biases == [1, 2, 3]
 
-    large_layer = neuron_classes.NeuronLayer(
+    large_layer = neuron_class.BaseNeuronLayer(
         size=size,
         next_layer=forward_large_layer,
     )
@@ -184,8 +184,8 @@ def test_neuron_layer_activate_next_layer():
 
 
 def test_proportional_changes(neuron_layers_size_5):
-    current_layer: neuron_classes.NeuronLayer = neuron_layers_size_5['output_neuron_layer_medium']
-    previous_layer: neuron_classes.NeuronLayer = neuron_layers_size_5['hidden_neuron_layer_medium']
+    current_layer: neuron_class.BaseNeuronLayer = neuron_layers_size_5['output_neuron_layer_medium']
+    previous_layer: neuron_class.BaseNeuronLayer = neuron_layers_size_5['hidden_neuron_layer_medium']
 
     previous_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
     for neuron in previous_layer.neurons + current_layer.neurons:

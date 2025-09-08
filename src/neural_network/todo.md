@@ -117,14 +117,14 @@ TODO:
    - (A - if you look carefully, each dictionary has a weight to each neuron in the next layer, so each dictionary points to 5 same memory addresses) why are they all at the same memory address? (0x0352E4B0)
 
       ---------------------------------------------------------------- Captured stdout call ----------------------------------------------------------------
-      {<neural_network.neuron_classes.Neuron object at 0x0352EC90>: 100, <neural_network.neuron_classes.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E900>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E318>: 0}
-      {<neural_network.neuron_classes.Neuron object at 0x0352EC90>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E4B0>: 100, <neural_network.neuron_classes.Neuron object at 0x0352E900>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E318>: 0}
-      {<neural_network.neuron_classes.Neuron object at 0x0352EC90>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E900>: 100, <neural_network.neuron_classes.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E318>: 0}
-      {<neural_network.neuron_classes.Neuron object at 0x0352EC90>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E900>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E3D8>: 100, <neural_network.neuron_classes.Neuron object at 0x0352E318>: 0}
-      {<neural_network.neuron_classes.Neuron object at 0x0352EC90>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E900>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_classes.Neuron object at 0x0352E318>: 100}
+      {<neural_network.neuron_class.Neuron object at 0x0352EC90>: 100, <neural_network.neuron_class.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_class.Neuron object at 0x0352E900>: 0, <neural_network.neuron_class.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_class.Neuron object at 0x0352E318>: 0}
+      {<neural_network.neuron_class.Neuron object at 0x0352EC90>: 0, <neural_network.neuron_class.Neuron object at 0x0352E4B0>: 100, <neural_network.neuron_class.Neuron object at 0x0352E900>: 0, <neural_network.neuron_class.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_class.Neuron object at 0x0352E318>: 0}
+      {<neural_network.neuron_class.Neuron object at 0x0352EC90>: 0, <neural_network.neuron_class.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_class.Neuron object at 0x0352E900>: 100, <neural_network.neuron_class.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_class.Neuron object at 0x0352E318>: 0}
+      {<neural_network.neuron_class.Neuron object at 0x0352EC90>: 0, <neural_network.neuron_class.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_class.Neuron object at 0x0352E900>: 0, <neural_network.neuron_class.Neuron object at 0x0352E3D8>: 100, <neural_network.neuron_class.Neuron object at 0x0352E318>: 0}
+      {<neural_network.neuron_class.Neuron object at 0x0352EC90>: 0, <neural_network.neuron_class.Neuron object at 0x0352E4B0>: 0, <neural_network.neuron_class.Neuron object at 0x0352E900>: 0, <neural_network.neuron_class.Neuron object at 0x0352E3D8>: 0, <neural_network.neuron_class.Neuron object at 0x0352E318>: 100}
 
 
-   - separate out NeuronLayer class into NeuronLayer, InitialNeuronLayer, OutputNeuronLayer (and give these three their own file)
+   - separate out BaseNeuronLayer class into BaseNeuronLayer, InitialNeuronLayer, OutputNeuronLayer (and give these three their own file)
 
 implementation:
  - neuron layer class is responsible for having the method that takes a neuron and a cost and determines the proportional changes which that neuron wants to make to every neuron in the previous layer.

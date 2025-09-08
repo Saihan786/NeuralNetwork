@@ -1,23 +1,23 @@
 import pytest
-from neural_network import neuron_classes as neuron_classes
+from neural_network import neuron_class as neuron_class
 
 
 @pytest.fixture
 def neuron():
-    return neuron_classes.Neuron()
+    return neuron_class.Neuron()
 
 
 @pytest.fixture
 def forward_neuron():
-    return neuron_classes.Neuron()
+    return neuron_class.Neuron()
 
 
 def test_repeat_init(forward_neuron):
-    neuron = neuron_classes.Neuron()
+    neuron = neuron_class.Neuron()
     neuron.bias = 5
     neuron.weights = {forward_neuron: 5}
     neuron.weights[forward_neuron] = 5
-    neuron = neuron_classes.Neuron()
+    neuron = neuron_class.Neuron()
     assert neuron.bias == 0
     assert neuron.weights == {}
     assert forward_neuron.weights == {}

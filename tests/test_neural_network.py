@@ -1,6 +1,6 @@
 from typing import List
 import pytest
-from neural_network import neuron_classes as neuron_classes
+from neural_network import neuron_class, neuron_layer_classes, network_class
 
 
 @pytest.fixture
@@ -8,16 +8,16 @@ def single_neuron_network():
     """Setup for one neuron network tests."""
 
     # Make three lists of 10 neurons each
-    output_one_neuron = [neuron_classes.Neuron() for _ in range(1)]
-    hidden_one_neuron = [neuron_classes.Neuron() for _ in range(1)]
-    input_one_neuron = [neuron_classes.Neuron() for _ in range(1)]
+    output_one_neuron = [neuron_class.Neuron() for _ in range(1)]
+    hidden_one_neuron = [neuron_class.Neuron() for _ in range(1)]
+    input_one_neuron = [neuron_class.Neuron() for _ in range(1)]
 
     # Make the one neuron layers
-    output_layer_one_neurons = neuron_classes.NeuronLayer(size=-1, neurons=output_one_neuron)
-    hidden_layer_one_neurons = neuron_classes.NeuronLayer(
+    output_layer_one_neurons = neuron_layer_classes.BaseNeuronLayer(size=-1, neurons=output_one_neuron)
+    hidden_layer_one_neurons = neuron_layer_classes.BaseNeuronLayer(
         size=-1, neurons=hidden_one_neuron, next_layer=output_layer_one_neurons
     )
-    input_layer_one_neurons = neuron_classes.NeuronLayer(
+    input_layer_one_neurons = neuron_layer_classes.BaseNeuronLayer(
         size=-1, neurons=input_one_neuron, next_layer=hidden_layer_one_neurons, initial_layer=True
     )
 
@@ -37,16 +37,16 @@ def ten_neuron_network():
     """Setup for ten neuron network tests."""
 
     # Make three lists of 10 neurons each
-    output_ten_neuron = [neuron_classes.Neuron() for _ in range(10)]
-    hidden_ten_neuron = [neuron_classes.Neuron() for _ in range(10)]
-    input_ten_neuron = [neuron_classes.Neuron() for _ in range(10)]
+    output_ten_neuron = [neuron_class.Neuron() for _ in range(10)]
+    hidden_ten_neuron = [neuron_class.Neuron() for _ in range(10)]
+    input_ten_neuron = [neuron_class.Neuron() for _ in range(10)]
 
     # Make the ten neuron layers
-    output_layer_ten_neurons = neuron_classes.NeuronLayer(size=-1, neurons=output_ten_neuron)
-    hidden_layer_ten_neurons = neuron_classes.NeuronLayer(
+    output_layer_ten_neurons = neuron_layer_classes.BaseNeuronLayer(size=-1, neurons=output_ten_neuron)
+    hidden_layer_ten_neurons = neuron_layer_classes.BaseNeuronLayer(
         size=-1, neurons=hidden_ten_neuron, next_layer=output_layer_ten_neurons
     )
-    input_layer_ten_neurons = neuron_classes.NeuronLayer(
+    input_layer_ten_neurons = neuron_layer_classes.BaseNeuronLayer(
         size=-1, neurons=input_ten_neuron, next_layer=hidden_layer_ten_neurons, initial_layer=True
     )
 
@@ -64,18 +64,57 @@ def ten_neuron_network():
 @pytest.fixture
 def five_neuron_network():
     """Setup for five neuron network tests."""
+    # Make the three neuron layers
+    layers = [
+        neuron_layer_classes.InitialNeuronLayer(
+            size=-1,
+            neurons=[neuron_class.Neuron() for _ in range(5)],
+        ),
+        neuron_layer_classes.InternalNeuronLayer(
+            size=-1,
+            neurons=[neuron_class.Neuron() for _ in range(5)],
+        ),
+        neuron_layer_classes.OutputNeuronLayer(
+            size=-1,
+            neurons=[neuron_class.Neuron() for _ in range(5)],
+        )
+    ]
+
+
+    # Set previous layers
+    for i in range(1, 3):
+        layers[i].previous_layer = layers[i - 1]
+
+    # Set next layers
+    for i in range(0, 2):
+        layers[i].next_layer = layers[i + 1]
+
+    # Set up network
+    network = network_class.Network(layers=layers)
+
+    return {
+        "network": network,
+        "layers": layers,
+        "input_layer": layers[0],
+        "hidden_layer": layers[1],
+        "output_layer": layers[2],
+    }
+
+
+
+
 
     # Make three lists of 10 neurons each
-    output_five_neurons = [neuron_classes.Neuron() for _ in range(5)]
-    hidden_five_neurons = [neuron_classes.Neuron() for _ in range(5)]
-    input_five_neurons = [neuron_classes.Neuron() for _ in range(5)]
+    output_five_neurons = [neuron_class.Neuron() for _ in range(5)]
+    hidden_five_neurons = [neuron_class.Neuron() for _ in range(5)]
+    input_five_neurons = [neuron_class.Neuron() for _ in range(5)]
 
     # Make the five neuron layers
-    output_layer_five_neurons = neuron_classes.NeuronLayer(size=-1, neurons=output_five_neurons)
-    hidden_layer_five_neurons = neuron_classes.NeuronLayer(
+    output_layer_five_neurons = neuron_layer_classes.BaseNeuronLayer(size=-1, neurons=output_five_neurons)
+    hidden_layer_five_neurons = neuron_layer_classes.BaseNeuronLayer(
         size=-1, neurons=hidden_five_neurons, next_layer=output_layer_five_neurons
     )
-    input_layer_five_neurons = neuron_classes.NeuronLayer(
+    input_layer_five_neurons = neuron_layer_classes.BaseNeuronLayer(
         size=-1, neurons=input_five_neurons, next_layer=hidden_layer_five_neurons, initial_layer=True
     )
 
@@ -92,19 +131,23 @@ def five_neuron_network():
 
 @pytest.fixture
 def ten_layer_network():
-    # Make ten lists of 5 neurons each
-    output_five_neurons = [neuron_classes.Neuron() for _ in range(5)]
-    hidden_five_neurons = [neuron_classes.Neuron() for _ in range(5)]
-    input_five_neurons = [neuron_classes.Neuron() for _ in range(5)]
-
     # Make the ten neuron layers
-    layers = [neuron_classes.NeuronLayer(
+    layers = [
+        neuron_layer_classes.InitialNeuronLayer(
+            size=-1,
+            neurons=[neuron_class.Neuron() for _ in range(5)],
+        ),
+    ]
+
+    layers += [neuron_layer_classes.InternalNeuronLayer(
         size=-1,
-        neurons=[neuron_classes.Neuron() for _ in range(5)],
-        next_layer=None,
-        initial_layer=True if i == 0 else False,
-        previous_layer=None
-    ) for i in range(10)]
+        neurons=[neuron_class.Neuron() for _ in range(5)],
+    ) for i in range(8)]
+
+    layers += [neuron_layer_classes.OutputNeuronLayer(
+        size=-1,
+        neurons=[neuron_class.Neuron() for _ in range(5)],
+    )]
 
     # Set previous layers
     for i in range(1, 10):
@@ -115,7 +158,7 @@ def ten_layer_network():
         layers[i].next_layer = layers[i + 1]
 
     # Set up network
-    network = neuron_classes.Network(layers=layers)
+    network = network_class.Network(layers=layers)
 
     return {
         "network": network,
@@ -165,7 +208,7 @@ def test_activate_layers_one_neuron(single_neuron_network):
 
 def test_activate_layers_ten_neurons(ten_neuron_network):
     # Create network
-    network = neuron_classes.Network(
+    network = network_class.Network(
         layers=[
             ten_neuron_network["input_layer"],
             ten_neuron_network["hidden_layer"],
@@ -192,7 +235,7 @@ def test_cost_function_no_input_data(single_neuron_network):
     input_layer.weights = [[1.0] for _ in range(1)]
     hidden_layer.weights = [[1.0] for _ in range(1)]
 
-    network = neuron_classes.Network(layers = [input_layer, hidden_layer, output_layer])
+    network = network_class.Network(layers = [input_layer, hidden_layer, output_layer])
     cost: float = network.cost_function(desired_activation_values=[1.0])
 
     assert cost == 0.0
@@ -208,7 +251,7 @@ def test_cost_function_with_input_data(single_neuron_network):
     input_layer.weights = [[1.0] for _ in range(1)]
     hidden_layer.weights = [[1.0] for _ in range(1)]
 
-    network = neuron_classes.Network(layers = [input_layer, hidden_layer, output_layer])
+    network = network_class.Network(layers = [input_layer, hidden_layer, output_layer])
 
     # Activation for the three neurons should be 1.0 each
     cost: float = network.cost_function(desired_activation_values=[1.0], input_data=[1.0])
@@ -224,7 +267,7 @@ def test_cost_function_with_input_data_ten_neurons(ten_neuron_network):
     for neuron in output_layer.neurons:
         neuron.activation = 1
     
-    network = neuron_classes.Network(layers=[input_layer, hidden_layer, output_layer])
+    network = network_class.Network(layers=[input_layer, hidden_layer, output_layer])
     cost_1: float = network.cost_function(desired_activation_values=[3.0]*10)
     network.print()
 
@@ -259,10 +302,10 @@ def test_cost_function_with_incorrect_desired_activation_values(single_neuron_ne
     hidden_layer = single_neuron_network['hidden_layer']
     output_layer = single_neuron_network['output_layer']
 
-    network = neuron_classes.Network(layers = [input_layer, hidden_layer, output_layer])
+    network = network_class.Network(layers = [input_layer, hidden_layer, output_layer])
     network.print()
 
-    with pytest.raises(neuron_classes.IncorrectInputError):
+    with pytest.raises(neuron_class.IncorrectInputError):
         network.cost_function(desired_activation_values=([0] * (INCORRECT_NUM_OUTPUT_NEURONS)))
 
 
@@ -275,13 +318,15 @@ def test_backpropagate_weights_decreases_cost(five_neuron_network):
     hidden_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
     input_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
 
-    network = neuron_classes.Network([input_layer, hidden_layer, output_layer])
+    network = network_class.Network([input_layer, hidden_layer, output_layer])
 
+    network.print()
     old_cost = network.cost_function(
         desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
         input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
     )
     network.backpropagate_weights([2.0, 0.0, 0.0, 0.0, 0.0])
+    network.print()
 
     new_cost = network.cost_function(
         desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
@@ -299,7 +344,7 @@ def test_backpropagate_weights_repeatedly_decreases_cost(five_neuron_network):
     hidden_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
     input_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
 
-    network = neuron_classes.Network([input_layer, hidden_layer, output_layer])
+    network = network_class.Network([input_layer, hidden_layer, output_layer])
 
     old_cost = network.cost_function(
         desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
@@ -354,7 +399,6 @@ def test_backpropagate_weights_ten_layers(ten_layer_network):
 
     assert new_cost < old_cost
     assert False
-    
 
 
 def test_backpropagate_weights_with_zero_cost(five_neuron_network):
@@ -369,7 +413,7 @@ def test_backpropagate_weights_with_zero_cost(five_neuron_network):
     for neuron in hidden_layer.neurons + output_layer.neurons:
         neuron.activation = 1
     
-    network = neuron_classes.Network([input_layer, hidden_layer, output_layer])
+    network = network_class.Network([input_layer, hidden_layer, output_layer])
 
     old_cost = network.cost_function(
         desired_activation_values=[1.0, 1.0, 1.0, 1.0, 1.0],
