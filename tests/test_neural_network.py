@@ -428,3 +428,62 @@ def test_backpropagate_weights_with_zero_cost(five_neuron_network):
         input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
     )
     assert new_cost == old_cost
+
+
+def test_backpropagate_multiple_examples(five_neuron_network):
+    """This trains the network over 5 different sets of input data and tests that costs are generated at the end."""
+
+    input_layer = five_neuron_network['input_layer']
+    hidden_layer = five_neuron_network['hidden_layer']
+    output_layer = five_neuron_network['output_layer']
+
+    # Set up predictable weights
+    hidden_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
+    input_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
+
+    # Set up training data - contains data to pass into the network and contains desired activation values
+    training_data = {
+        'input_data': [
+            [3.0, 1.0, 1.0, 1.0, 1.0],
+            [1.0, 3.0, 1.0, 1.0, 1.0],
+            [1.0, 1.0, 3.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0, 3.0, 1.0],
+            [1.0, 1.0, 1.0, 1.0, 3.0],
+        ],
+        'desired_activation_values': [
+            [3.0, 1.0, 1.0, 1.0, 1.0],
+            [1.0, 3.0, 1.0, 1.0, 1.0],
+            [1.0, 1.0, 3.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0, 3.0, 1.0],
+            [1.0, 1.0, 1.0, 1.0, 3.0],
+        ]
+    }
+    network = network_class.Network([input_layer, hidden_layer, output_layer])
+
+    for i in range(5):
+        old_cost = network.cost_function(
+            input_data=training_data['input_data'][i],
+            desired_activation_values=training_data['desired_activation_values'][i],
+        )
+        for _ in range(20):
+            new_cost = network.cost_function(
+                input_data=training_data['input_data'][i],
+                desired_activation_values=training_data['desired_activation_values'][i],
+            )
+            network.backpropagate_weights(training_data['desired_activation_values'][i])
+            print(f"old_cost={old_cost}")
+            print(f"new_cost={new_cost}")
+
+            old_cost = new_cost
+
+    network.print()
+    training_costs = [network.cost_function(
+        input_data=training_data['input_data'][i],
+        desired_activation_values=training_data['desired_activation_values'][i],
+    ) for i in range(5)]
+
+    for costs in training_costs:
+        print(f"cost={sum(costs)}")
+
+    assert len(costs) == 5
+
