@@ -310,7 +310,7 @@ def test_cost_function_with_incorrect_desired_activation_values(single_neuron_ne
         network.cost_function(desired_activation_values=([0] * (INCORRECT_NUM_OUTPUT_NEURONS)))
 
 
-def test_backpropagate_weights_decreases_cost(five_neuron_network):
+def test_backpropagate_decreases_cost(five_neuron_network):
     input_layer = five_neuron_network['input_layer']
     hidden_layer = five_neuron_network['hidden_layer']
     output_layer = five_neuron_network['output_layer']
@@ -326,7 +326,7 @@ def test_backpropagate_weights_decreases_cost(five_neuron_network):
         desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
         input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
     )
-    network.backpropagate_weights([2.0, 0.0, 0.0, 0.0, 0.0])
+    network.backpropagate([2.0, 0.0, 0.0, 0.0, 0.0])
     network.print()
 
     new_cost = network.cost_function(
@@ -336,7 +336,7 @@ def test_backpropagate_weights_decreases_cost(five_neuron_network):
     assert new_cost < old_cost
 
 
-def test_backpropagate_weights_repeatedly_decreases_cost(five_neuron_network):
+def test_backpropagate_repeatedly_decreases_cost(five_neuron_network):
     input_layer = five_neuron_network['input_layer']
     hidden_layer = five_neuron_network['hidden_layer']
     output_layer = five_neuron_network['output_layer']
@@ -353,7 +353,7 @@ def test_backpropagate_weights_repeatedly_decreases_cost(five_neuron_network):
     )
 
     for i in range(100):
-        network.backpropagate_weights([2.0, 0.0, 0.0, 0.0, 0.0])
+        network.backpropagate([2.0, 0.0, 0.0, 0.0, 0.0])
         
         new_cost = network.cost_function(
             desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
@@ -364,7 +364,7 @@ def test_backpropagate_weights_repeatedly_decreases_cost(five_neuron_network):
         old_cost = new_cost
 
 
-def test_backpropagate_weights_ten_layers(ten_layer_network):
+def test_backpropagate_ten_layers(ten_layer_network):
     """
     This fails as the learning rate needs to be very precise (a particular number of dps) which is different to the
     learning rate required for networks with smaller numbers of layers.
@@ -489,7 +489,7 @@ def test_backpropagate_weights_ten_layers(ten_layer_network):
                     input_data=training_data['input_data'][i],
                     desired_activation_values=training_data['desired_activation_values'][i],
                 )
-                network.backpropagate_weights(training_data['desired_activation_values'][i])
+                network.backpropagate(training_data['desired_activation_values'][i])
                 # print(f"old_cost={old_cost}")
                 # print(f"new_cost={new_cost}")
 
@@ -509,8 +509,8 @@ def test_backpropagate_weights_ten_layers(ten_layer_network):
     assert False
 
 
-def test_backpropagate_weights_with_zero_cost(five_neuron_network):
-    """Test backpropagate_weights doesn't change weights if cost is zero."""
+def test_backpropagate_with_zero_cost(five_neuron_network):
+    """Test backpropagate doesn't change weights if cost is zero."""
     input_layer = five_neuron_network['input_layer']
     hidden_layer = five_neuron_network['hidden_layer']
     output_layer = five_neuron_network['output_layer']
@@ -529,7 +529,7 @@ def test_backpropagate_weights_with_zero_cost(five_neuron_network):
     )
     activation_values_after_providing_input_data = network.output_layer.activations
 
-    network.backpropagate_weights(desired_outputs=activation_values_after_providing_input_data)
+    network.backpropagate(desired_outputs=activation_values_after_providing_input_data)
 
     new_cost = network.cost_function(
         desired_activation_values=[1.0, 1.0, 1.0, 1.0, 1.0],
@@ -588,7 +588,7 @@ def test_backpropagate_multiple_examples(five_neuron_network):
                 input_data=training_data['input_data'][i],
                 desired_activation_values=training_data['desired_activation_values'][i],
             )
-            network.backpropagate_weights(training_data['desired_activation_values'][i])
+            network.backpropagate(training_data['desired_activation_values'][i])
             print(f"old_cost={old_cost}")
             print(f"new_cost={new_cost}")
 

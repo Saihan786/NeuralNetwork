@@ -160,7 +160,7 @@ if __name__ == "__main__":
                     input_data=training_data['input_data'][i],
                     desired_activation_values=training_data['desired_activation_values'][i],
                 )
-                network.backpropagate_weights(training_data['desired_activation_values'][i])
+                network.backpropagate(training_data['desired_activation_values'][i])
                 old_cost = new_cost
 
     network.print()

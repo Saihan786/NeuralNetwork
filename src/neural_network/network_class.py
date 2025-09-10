@@ -141,7 +141,7 @@ class Network:
 
         return sqr_diffs
 
-    def backpropagate_weights(self, desired_outputs: List[float]):
+    def backpropagate(self, desired_outputs: List[float]):
         """
         Generates a list of changes to each weight in the network, then applies them.
 
