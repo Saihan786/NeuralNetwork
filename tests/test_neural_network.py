@@ -1,6 +1,7 @@
 from typing import List
 import pytest
 from neural_network import neuron_class, neuron_layer_classes, network_class
+import random
 
 
 @pytest.fixture
@@ -392,24 +393,52 @@ def test_backpropagate_weights_ten_layers(ten_layer_network):
             [0.89, -0.34, 0.78, -0.56, 0.91],
             [-0.23, 0.45, -0.67, 0.12, -0.89]
         ]
-        for neuron in layer.neurons:
-            neuron.bias = 0.0
+
+    # For 5-neuron layers, try these small random biases:
+    for layer in network.layers[1:]:
+        layer.biases = [random.uniform(-0.1, 0.1) for _ in range(5)]
 
     # Set up training data - contains data to pass into the network and contains desired activation values
     training_data = {
         'input_data': [
+            # Original one-hot vectors
             [1.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 0.0, 1.0],
+            
+            # Two-element combinations
             [0.5, 0.5, 0.0, 0.0, 0.0],
             [0.3, 0.7, 0.0, 0.0, 0.0],
-            [0.2, 0.2, 0.6, 0.0, 0.0],
-            [0.1, 0.1, 0.1, 0.7, 0.0],
+            [0.0, 0.6, 0.4, 0.0, 0.0],
+            [0.0, 0.0, 0.8, 0.2, 0.0],
             [0.0, 0.0, 0.0, 0.4, 0.6],
+            
+            # Three-element combinations
+            [0.2, 0.3, 0.5, 0.0, 0.0],
+            [0.1, 0.4, 0.5, 0.0, 0.0],
+            [0.0, 0.2, 0.3, 0.5, 0.0],
+            [0.0, 0.0, 0.3, 0.4, 0.3],
+            
+            # More diverse patterns
+            [0.9, 0.1, 0.0, 0.0, 0.0],
+            [0.1, 0.9, 0.0, 0.0, 0.0],
+            [0.0, 0.1, 0.9, 0.0, 0.0],
+            [0.0, 0.0, 0.1, 0.9, 0.0],
+            [0.0, 0.0, 0.0, 0.1, 0.9],
+            
+            # Uniform distributions
+            [0.2, 0.2, 0.2, 0.2, 0.2],
+            [0.15, 0.25, 0.2, 0.25, 0.15],
+            
+            # Edge cases with small values
+            [0.05, 0.0, 0.0, 0.0, 0.95],
+            [0.95, 0.05, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.95, 0.05, 0.0],
         ],
         'desired_activation_values': [
+            # Same as inputs (identity mapping)
             [1.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0, 0.0],
@@ -417,9 +446,23 @@ def test_backpropagate_weights_ten_layers(ten_layer_network):
             [0.0, 0.0, 0.0, 0.0, 1.0],
             [0.5, 0.5, 0.0, 0.0, 0.0],
             [0.3, 0.7, 0.0, 0.0, 0.0],
-            [0.2, 0.2, 0.6, 0.0, 0.0],
-            [0.1, 0.1, 0.1, 0.7, 0.0],
+            [0.0, 0.6, 0.4, 0.0, 0.0],
+            [0.0, 0.0, 0.8, 0.2, 0.0],
             [0.0, 0.0, 0.0, 0.4, 0.6],
+            [0.2, 0.3, 0.5, 0.0, 0.0],
+            [0.1, 0.4, 0.5, 0.0, 0.0],
+            [0.0, 0.2, 0.3, 0.5, 0.0],
+            [0.0, 0.0, 0.3, 0.4, 0.3],
+            [0.9, 0.1, 0.0, 0.0, 0.0],
+            [0.1, 0.9, 0.0, 0.0, 0.0],
+            [0.0, 0.1, 0.9, 0.0, 0.0],
+            [0.0, 0.0, 0.1, 0.9, 0.0],
+            [0.0, 0.0, 0.0, 0.1, 0.9],
+            [0.2, 0.2, 0.2, 0.2, 0.2],
+            [0.15, 0.25, 0.2, 0.25, 0.15],
+            [0.05, 0.0, 0.0, 0.0, 0.95],
+            [0.95, 0.05, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.95, 0.05, 0.0],
         ]
     }
 
@@ -434,6 +477,7 @@ def test_backpropagate_weights_ten_layers(ten_layer_network):
 
     
     for j in range(30):
+        print(f"epoch={j}")
 
         for i in range(len(training_data['input_data'])):
             old_cost = network.cost_function(

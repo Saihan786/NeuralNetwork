@@ -160,11 +160,13 @@ class Network:
         """
 
         neuron_to_weight_changes: Dict[Neuron, Dict[Neuron, float]] = {}
+        neuron_to_bias_changes: Dict[Neuron, float] = {}
         effect_of_actval_on_cost: neuron_layer_classes.BaseNeuronLayer = {}
 
         layer_before_weights = self.output_layer.previous_layer
         while layer_before_weights:
             layer_before_weights.weight_changes_for_layer(
+                neuron_to_bias_changes=neuron_to_bias_changes,
                 neuron_to_weight_changes=neuron_to_weight_changes,
                 effect_of_actval_on_cost=effect_of_actval_on_cost,
                 desired_outputs=desired_outputs
@@ -175,4 +177,6 @@ class Network:
             for target_neuron, change in weight_changes.items():
                 original = neuron.weights[target_neuron]
                 neuron.weights[target_neuron] += change * 0.05  # Learning rate
-                x=neuron.weights[target_neuron]
+
+        for neuron, bias_change in neuron_to_bias_changes.items():
+            neuron.bias += bias_change * 0.025  # Learning rate

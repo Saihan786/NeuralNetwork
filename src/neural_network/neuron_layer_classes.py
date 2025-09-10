@@ -124,7 +124,7 @@ class NonOutputNeuronLayer(BaseNeuronLayer):
                         activation += neuron.activation * neuron.weights[forward_neuron]
                 forward_neuron.activation = sigmoid_function(activation)
 
-    def weight_changes_for_layer(self, neuron_to_weight_changes: Dict[Neuron, Dict[Neuron, float]], effect_of_actval_on_cost: Dict[Neuron, float], desired_outputs: List[float] = None):
+    def weight_changes_for_layer(self, neuron_to_bias_changes: Dict[Neuron, float], neuron_to_weight_changes: Dict[Neuron, Dict[Neuron, float]], effect_of_actval_on_cost: Dict[Neuron, float], desired_outputs: List[float] = None):
         """
         This function updates `neuron_to_weight_changes` with the changes for the weights that come from this layer.
 
@@ -151,8 +151,11 @@ class NonOutputNeuronLayer(BaseNeuronLayer):
 
                     effect_of_actval_on_cost[output_neuron] = 2 * (desired_output - output_neuron.activation)
 
-                    weight_changes[output_neuron] = effect_of_actval_on_cost[output_neuron] * neuron_before_weight.activation * sigmoid_derivative(output_neuron.activation)
+                    common_change = effect_of_actval_on_cost[output_neuron] * sigmoid_derivative(output_neuron.activation)
+                    bias_change = common_change
+                    weight_changes[output_neuron] = common_change * neuron_before_weight.activation
 
+                    neuron_to_bias_changes[output_neuron] = bias_change
                 neuron_to_weight_changes[neuron_before_weight] = weight_changes
 
         else:
@@ -170,9 +173,25 @@ class NonOutputNeuronLayer(BaseNeuronLayer):
 
                     effect_of_actval_on_cost[neuron_after_weight] = effect
 
-                    weight_changes[neuron_after_weight] = effect_of_actval_on_cost[neuron_after_weight] * sigmoid_derivative(neuron_after_weight.activation) * neuron_before_weight.activation
+                    common_change = effect_of_actval_on_cost[neuron_after_weight] * sigmoid_derivative(neuron_after_weight.activation)
+                    bias_change = common_change
+                    weight_changes[neuron_after_weight] = common_change * neuron_before_weight.activation
                 
+                    neuron_to_bias_changes[neuron_after_weight] = bias_change
                 neuron_to_weight_changes[neuron_before_weight] = weight_changes
+
+                if isinstance(self, InitialNeuronLayer):
+                    # repeat the above for the input layer, as it isn't covered for weight backpropagation
+                    effect = 0.0
+                    input_neuron = neuron_before_weight
+
+                    for neuron_after_weight, _ in connection.items():
+                        effect += effect_of_actval_on_cost[neuron_after_weight] * \
+                                  sigmoid_derivative(neuron_after_weight.activation) * \
+                                  input_neuron.weights[neuron_after_weight]
+
+                    bias_change = effect * sigmoid_derivative(neuron_after_weight.activation)
+                    neuron_to_bias_changes[input_neuron] = bias_change
 
 
 class InitialNeuronLayer(NonOutputNeuronLayer):
