@@ -174,5 +174,5 @@ class Network:
         for neuron, weight_changes in neuron_to_weight_changes.items():
             for target_neuron, change in weight_changes.items():
                 original = neuron.weights[target_neuron]
-                neuron.weights[target_neuron] += change * 0.02  # Learning rate
+                neuron.weights[target_neuron] += change * 0.05  # Learning rate
                 x=neuron.weights[target_neuron]

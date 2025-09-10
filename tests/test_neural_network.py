@@ -377,29 +377,91 @@ def test_backpropagate_weights_ten_layers(ten_layer_network):
     
     network = ten_layer_network['network']
 
-    for layer in network.layers:
-        layer.weights = [[1.0] * 5] * 10
+    network.layers[0].weights = [
+        [0.23, -0.41, 0.67, -0.12, 0.89],
+        [-0.34, 0.78, -0.56, 0.91, -0.23],
+        [0.45, -0.67, 0.12, -0.89, 0.34],
+        [-0.78, 0.56, -0.91, 0.23, -0.45],
+        [0.67, -0.12, 0.89, -0.34, 0.78]
+    ]
+    for layer in network.layers[1:]:
+        layer.weights = [
+            [-0.56, 0.91, -0.23, 0.45, -0.67],
+            [0.12, -0.89, 0.34, -0.78, 0.56],
+            [-0.91, 0.23, -0.45, 0.67, -0.12],
+            [0.89, -0.34, 0.78, -0.56, 0.91],
+            [-0.23, 0.45, -0.67, 0.12, -0.89]
+        ]
         for neuron in layer.neurons:
             neuron.bias = 0.0
 
+    # Set up training data - contains data to pass into the network and contains desired activation values
+    training_data = {
+        'input_data': [
+            [1.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 1.0],
+            [0.5, 0.5, 0.0, 0.0, 0.0],
+            [0.3, 0.7, 0.0, 0.0, 0.0],
+            [0.2, 0.2, 0.6, 0.0, 0.0],
+            [0.1, 0.1, 0.1, 0.7, 0.0],
+            [0.0, 0.0, 0.0, 0.4, 0.6],
+        ],
+        'desired_activation_values': [
+            [1.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 1.0],
+            [0.5, 0.5, 0.0, 0.0, 0.0],
+            [0.3, 0.7, 0.0, 0.0, 0.0],
+            [0.2, 0.2, 0.6, 0.0, 0.0],
+            [0.1, 0.1, 0.1, 0.7, 0.0],
+            [0.0, 0.0, 0.0, 0.4, 0.6],
+        ]
+    }
+
     network.print()
-    old_cost = network.cost_function(
-        desired_activation_values=[0.0, 0.0, 0.0, 0.0, 0.0],
-        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
-    )
+    training_costs = [network.cost_function(
+        input_data=training_data['input_data'][i],
+        desired_activation_values=training_data['desired_activation_values'][i],
+    ) for i in range(len(training_data['input_data']))]
+
+    for costs in training_costs:
+        print(f"cost={sum(costs)}")
+
     
+    for j in range(30):
 
-    network.backpropagate_weights([0.0, 0.0, 0.0, 0.0, 0.0])
-    new_cost = network.cost_function(
-        desired_activation_values=[0.0, 0.0, 0.0, 0.0, 0.0],
-        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
-    )
+        for i in range(len(training_data['input_data'])):
+            old_cost = network.cost_function(
+                input_data=training_data['input_data'][i],
+                desired_activation_values=training_data['desired_activation_values'][i],
+            )
+            for _ in range(50):
+                new_cost = network.cost_function(
+                    input_data=training_data['input_data'][i],
+                    desired_activation_values=training_data['desired_activation_values'][i],
+                )
+                network.backpropagate_weights(training_data['desired_activation_values'][i])
+                # print(f"old_cost={old_cost}")
+                # print(f"new_cost={new_cost}")
+
+                old_cost = new_cost
+
     network.print()
+    training_costs = [network.cost_function(
+        input_data=training_data['input_data'][i],
+        desired_activation_values=training_data['desired_activation_values'][i],
+    ) for i in range(len(training_data['input_data']))]
 
-    print(f"old_cost={old_cost}")
-    print(f"new_cost={new_cost}")
+    for costs in training_costs:
+        print(f"cost={sum(costs)}")
 
-    assert new_cost < old_cost
+
+
     assert False
 
 
@@ -498,6 +560,5 @@ def test_backpropagate_multiple_examples(five_neuron_network):
         print(f"cost={sum(costs)} - all_costs={costs}")
 
     # uncomment to see the effectiveness of this mini- neural network
-    # assert False
+    assert False
     assert len(costs) == 5
-

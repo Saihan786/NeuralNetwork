@@ -170,7 +170,7 @@ class NonOutputNeuronLayer(BaseNeuronLayer):
 
                     effect_of_actval_on_cost[neuron_after_weight] = effect
 
-                    weight_changes[neuron_after_weight] = effect_of_actval_on_cost[neuron_after_weight] * sigmoid_derivative(neuron_before_weight.activation) * neuron_before_weight.activation
+                    weight_changes[neuron_after_weight] = effect_of_actval_on_cost[neuron_after_weight] * sigmoid_derivative(neuron_after_weight.activation) * neuron_before_weight.activation
                 
                 neuron_to_weight_changes[neuron_before_weight] = weight_changes
 
