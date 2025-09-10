@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 from typing import Dict, List, Optional
-import numpy as np
 from neural_network import neuron_layer_classes
 
 
@@ -175,5 +174,5 @@ class Network:
         for neuron, weight_changes in neuron_to_weight_changes.items():
             for target_neuron, change in weight_changes.items():
                 original = neuron.weights[target_neuron]
-                neuron.weights[target_neuron] += change * 0.01  # Learning rate
+                neuron.weights[target_neuron] += change * 0.02  # Learning rate
                 x=neuron.weights[target_neuron]

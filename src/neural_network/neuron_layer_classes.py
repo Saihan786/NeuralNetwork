@@ -2,6 +2,17 @@
 
 from __future__ import annotations
 from typing import Dict, List, Optional
+import numpy as np
+
+
+def sigmoid_function(z):
+    """The `item` function is used to change the resulting `np.float` datatype to the normal `float`."""
+    
+    return 1/(1 + np.exp(-z).item())
+
+
+def sigmoid_derivative(z):
+    return sigmoid_function(z) * (1.0 - sigmoid_function(z))
 
 
 class CostsNotProvidedInBackPropagationError(Exception):
@@ -111,7 +122,7 @@ class NonOutputNeuronLayer(BaseNeuronLayer):
                 for neuron in self.neurons:
                     if neuron.weights:
                         activation += neuron.activation * neuron.weights[forward_neuron]
-                forward_neuron.activation = activation
+                forward_neuron.activation = sigmoid_function(activation)
 
     def weight_changes_for_layer(self, neuron_to_weight_changes: Dict[Neuron, Dict[Neuron, float]], effect_of_actval_on_cost: Dict[Neuron, float], desired_outputs: List[float] = None):
         """
@@ -140,7 +151,7 @@ class NonOutputNeuronLayer(BaseNeuronLayer):
 
                     effect_of_actval_on_cost[output_neuron] = 2 * (desired_output - output_neuron.activation)
 
-                    weight_changes[output_neuron] = effect_of_actval_on_cost[output_neuron] * neuron_before_weight.activation
+                    weight_changes[output_neuron] = effect_of_actval_on_cost[output_neuron] * neuron_before_weight.activation * sigmoid_derivative(output_neuron.activation)
 
                 neuron_to_weight_changes[neuron_before_weight] = weight_changes
 
@@ -153,11 +164,13 @@ class NonOutputNeuronLayer(BaseNeuronLayer):
                 for neuron_after_weight, weight_to_adjust in connection.items():
                     effect = 0.0
                     for indirectly_affected_neuron, _ in neuron_after_weight.weights.items():
-                        effect += effect_of_actval_on_cost[indirectly_affected_neuron] * neuron_after_weight.weights[indirectly_affected_neuron]
+                        effect += effect_of_actval_on_cost[indirectly_affected_neuron] * \
+                                  sigmoid_derivative(neuron_after_weight.activation) * \
+                                  neuron_after_weight.weights[indirectly_affected_neuron]
 
                     effect_of_actval_on_cost[neuron_after_weight] = effect
 
-                    weight_changes[neuron_after_weight] = effect_of_actval_on_cost[neuron_after_weight] * neuron_before_weight.activation
+                    weight_changes[neuron_after_weight] = effect_of_actval_on_cost[neuron_after_weight] * sigmoid_derivative(neuron_before_weight.activation) * neuron_before_weight.activation
                 
                 neuron_to_weight_changes[neuron_before_weight] = weight_changes
 
