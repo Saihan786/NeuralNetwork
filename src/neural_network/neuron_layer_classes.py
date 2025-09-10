@@ -165,7 +165,7 @@ class NonOutputNeuronLayer(BaseNeuronLayer):
                     effect = 0.0
                     for indirectly_affected_neuron, _ in neuron_after_weight.weights.items():
                         effect += effect_of_actval_on_cost[indirectly_affected_neuron] * \
-                                  sigmoid_derivative(neuron_after_weight.activation) * \
+                                  sigmoid_derivative(indirectly_affected_neuron.activation) * \
                                   neuron_after_weight.weights[indirectly_affected_neuron]
 
                     effect_of_actval_on_cost[neuron_after_weight] = effect
