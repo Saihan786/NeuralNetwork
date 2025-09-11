@@ -14,12 +14,17 @@ def single_neuron_network():
     input_one_neuron = [neuron_class.Neuron() for _ in range(1)]
 
     # Make the one neuron layers
-    output_layer_one_neurons = neuron_layer_classes.BaseNeuronLayer(size=-1, neurons=output_one_neuron)
+    output_layer_one_neurons = neuron_layer_classes.BaseNeuronLayer(
+        size=-1, neurons=output_one_neuron
+    )
     hidden_layer_one_neurons = neuron_layer_classes.BaseNeuronLayer(
         size=-1, neurons=hidden_one_neuron, next_layer=output_layer_one_neurons
     )
     input_layer_one_neurons = neuron_layer_classes.BaseNeuronLayer(
-        size=-1, neurons=input_one_neuron, next_layer=hidden_layer_one_neurons, initial_layer=True
+        size=-1,
+        neurons=input_one_neuron,
+        next_layer=hidden_layer_one_neurons,
+        initial_layer=True,
     )
 
     # Set previous layers
@@ -43,12 +48,17 @@ def ten_neuron_network():
     input_ten_neuron = [neuron_class.Neuron() for _ in range(10)]
 
     # Make the ten neuron layers
-    output_layer_ten_neurons = neuron_layer_classes.BaseNeuronLayer(size=-1, neurons=output_ten_neuron)
+    output_layer_ten_neurons = neuron_layer_classes.BaseNeuronLayer(
+        size=-1, neurons=output_ten_neuron
+    )
     hidden_layer_ten_neurons = neuron_layer_classes.BaseNeuronLayer(
         size=-1, neurons=hidden_ten_neuron, next_layer=output_layer_ten_neurons
     )
     input_layer_ten_neurons = neuron_layer_classes.BaseNeuronLayer(
-        size=-1, neurons=input_ten_neuron, next_layer=hidden_layer_ten_neurons, initial_layer=True
+        size=-1,
+        neurons=input_ten_neuron,
+        next_layer=hidden_layer_ten_neurons,
+        initial_layer=True,
     )
 
     # Set previous layers
@@ -78,9 +88,8 @@ def five_neuron_network():
         neuron_layer_classes.OutputNeuronLayer(
             size=-1,
             neurons=[neuron_class.Neuron() for _ in range(5)],
-        )
+        ),
     ]
-
 
     # Set previous layers
     for i in range(1, 3):
@@ -101,22 +110,23 @@ def five_neuron_network():
         "output_layer": layers[2],
     }
 
-
-
-
-
     # Make three lists of 10 neurons each
     output_five_neurons = [neuron_class.Neuron() for _ in range(5)]
     hidden_five_neurons = [neuron_class.Neuron() for _ in range(5)]
     input_five_neurons = [neuron_class.Neuron() for _ in range(5)]
 
     # Make the five neuron layers
-    output_layer_five_neurons = neuron_layer_classes.BaseNeuronLayer(size=-1, neurons=output_five_neurons)
+    output_layer_five_neurons = neuron_layer_classes.BaseNeuronLayer(
+        size=-1, neurons=output_five_neurons
+    )
     hidden_layer_five_neurons = neuron_layer_classes.BaseNeuronLayer(
         size=-1, neurons=hidden_five_neurons, next_layer=output_layer_five_neurons
     )
     input_layer_five_neurons = neuron_layer_classes.BaseNeuronLayer(
-        size=-1, neurons=input_five_neurons, next_layer=hidden_layer_five_neurons, initial_layer=True
+        size=-1,
+        neurons=input_five_neurons,
+        next_layer=hidden_layer_five_neurons,
+        initial_layer=True,
     )
 
     # Set previous layers
@@ -140,15 +150,20 @@ def ten_layer_network():
         ),
     ]
 
-    layers += [neuron_layer_classes.InternalNeuronLayer(
-        size=-1,
-        neurons=[neuron_class.Neuron() for _ in range(5)],
-    ) for i in range(8)]
+    layers += [
+        neuron_layer_classes.InternalNeuronLayer(
+            size=-1,
+            neurons=[neuron_class.Neuron() for _ in range(5)],
+        )
+        for i in range(8)
+    ]
 
-    layers += [neuron_layer_classes.OutputNeuronLayer(
-        size=-1,
-        neurons=[neuron_class.Neuron() for _ in range(5)],
-    )]
+    layers += [
+        neuron_layer_classes.OutputNeuronLayer(
+            size=-1,
+            neurons=[neuron_class.Neuron() for _ in range(5)],
+        )
+    ]
 
     # Set previous layers
     for i in range(1, 10):
@@ -226,9 +241,9 @@ def test_activate_layers_ten_neurons(ten_neuron_network):
 def test_cost_function_no_input_data(single_neuron_network):
     """Basic cost function execution with 3 layers with one neuron each and predetermined activation values."""
 
-    input_layer = single_neuron_network['input_layer']
-    hidden_layer = single_neuron_network['hidden_layer']
-    output_layer = single_neuron_network['output_layer']
+    input_layer = single_neuron_network["input_layer"]
+    hidden_layer = single_neuron_network["hidden_layer"]
+    output_layer = single_neuron_network["output_layer"]
 
     for neuron in input_layer.neurons + hidden_layer.neurons + output_layer.neurons:
         neuron.activation = 1
@@ -236,7 +251,7 @@ def test_cost_function_no_input_data(single_neuron_network):
     input_layer.weights = [[1.0] for _ in range(1)]
     hidden_layer.weights = [[1.0] for _ in range(1)]
 
-    network = network_class.Network(layers = [input_layer, hidden_layer, output_layer])
+    network = network_class.Network(layers=[input_layer, hidden_layer, output_layer])
     cost: float = network.cost_function(desired_activation_values=[1.0])
 
     assert cost == 0.0
@@ -245,31 +260,33 @@ def test_cost_function_no_input_data(single_neuron_network):
 def test_cost_function_with_input_data(single_neuron_network):
     """Basic cost function execution but activation is calculated."""
 
-    input_layer = single_neuron_network['input_layer']
-    hidden_layer = single_neuron_network['hidden_layer']
-    output_layer = single_neuron_network['output_layer']
+    input_layer = single_neuron_network["input_layer"]
+    hidden_layer = single_neuron_network["hidden_layer"]
+    output_layer = single_neuron_network["output_layer"]
 
     input_layer.weights = [[1.0] for _ in range(1)]
     hidden_layer.weights = [[1.0] for _ in range(1)]
 
-    network = network_class.Network(layers = [input_layer, hidden_layer, output_layer])
+    network = network_class.Network(layers=[input_layer, hidden_layer, output_layer])
 
     # Activation for the three neurons should be 1.0 each
-    cost: float = network.cost_function(desired_activation_values=[1.0], input_data=[1.0])
+    cost: float = network.cost_function(
+        desired_activation_values=[1.0], input_data=[1.0]
+    )
 
     assert cost == 0.0
 
 
 def test_cost_function_with_input_data_ten_neurons(ten_neuron_network):
-    input_layer = ten_neuron_network['input_layer']
-    hidden_layer = ten_neuron_network['hidden_layer']
-    output_layer = ten_neuron_network['output_layer']
+    input_layer = ten_neuron_network["input_layer"]
+    hidden_layer = ten_neuron_network["hidden_layer"]
+    output_layer = ten_neuron_network["output_layer"]
 
     for neuron in output_layer.neurons:
         neuron.activation = 1
-    
+
     network = network_class.Network(layers=[input_layer, hidden_layer, output_layer])
-    cost_1: float = network.cost_function(desired_activation_values=[3.0]*10)
+    cost_1: float = network.cost_function(desired_activation_values=[3.0] * 10)
     network.print()
 
     # (3.0 - 1.0)^2 + (3.0 - 1.0)^2 + ...
@@ -277,19 +294,23 @@ def test_cost_function_with_input_data_ten_neurons(ten_neuron_network):
 
     # calculates new activation values, but all biases and weights are set to 0 so most actvals are set to 0
     # (most, because input layer neurons depend on the input_data, not on the calculation)
-    cost_2: float = network.cost_function(desired_activation_values=[3.0]*10, input_data=[1.0]*10)
+    cost_2: float = network.cost_function(
+        desired_activation_values=[3.0] * 10, input_data=[1.0] * 10
+    )
 
     # (3.0 - 0.0)^2 + (3.0 - 0.0)^2 + ...
     assert cost_2 == 90.0
 
     # after setting up w+b below, one h_neuron should have actval (1*1)*10 + 5 = 15, and one o_neuron should
     # have actval (15*1)*10 + 5 = 155
-    input_layer.weights = [[1.0]*10 for _ in range(10)]
-    hidden_layer.weights = [[1.0]*10 for _ in range(10)]
+    input_layer.weights = [[1.0] * 10 for _ in range(10)]
+    hidden_layer.weights = [[1.0] * 10 for _ in range(10)]
     for neuron in hidden_layer.neurons + output_layer.neurons:
         neuron.bias = 5
 
-    cost_3: float = network.cost_function(desired_activation_values=[3.0]*10, input_data=[1.0]*10)
+    cost_3: float = network.cost_function(
+        desired_activation_values=[3.0] * 10, input_data=[1.0] * 10
+    )
 
     assert cost_3 == (3.0 - 155.0) * (3.0 - 155.0) * 10
 
@@ -299,21 +320,23 @@ def test_cost_function_with_incorrect_desired_activation_values(single_neuron_ne
 
     INCORRECT_NUM_OUTPUT_NEURONS = 2
 
-    input_layer = single_neuron_network['input_layer']
-    hidden_layer = single_neuron_network['hidden_layer']
-    output_layer = single_neuron_network['output_layer']
+    input_layer = single_neuron_network["input_layer"]
+    hidden_layer = single_neuron_network["hidden_layer"]
+    output_layer = single_neuron_network["output_layer"]
 
-    network = network_class.Network(layers = [input_layer, hidden_layer, output_layer])
+    network = network_class.Network(layers=[input_layer, hidden_layer, output_layer])
     network.print()
 
     with pytest.raises(neuron_class.IncorrectInputError):
-        network.cost_function(desired_activation_values=([0] * (INCORRECT_NUM_OUTPUT_NEURONS)))
+        network.cost_function(
+            desired_activation_values=([0] * (INCORRECT_NUM_OUTPUT_NEURONS))
+        )
 
 
 def test_backpropagate_decreases_cost(five_neuron_network):
-    input_layer = five_neuron_network['input_layer']
-    hidden_layer = five_neuron_network['hidden_layer']
-    output_layer = five_neuron_network['output_layer']
+    input_layer = five_neuron_network["input_layer"]
+    hidden_layer = five_neuron_network["hidden_layer"]
+    output_layer = five_neuron_network["output_layer"]
 
     # Set up predictable weights
     hidden_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
@@ -324,22 +347,22 @@ def test_backpropagate_decreases_cost(five_neuron_network):
     network.print()
     old_cost = network.cost_function(
         desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
-        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
+        input_data=[1.0, 0.0, 0.0, 0.0, 0.0],
     )
     network.backpropagate([2.0, 0.0, 0.0, 0.0, 0.0])
     network.print()
 
     new_cost = network.cost_function(
         desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
-        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
+        input_data=[1.0, 0.0, 0.0, 0.0, 0.0],
     )
     assert new_cost < old_cost
 
 
 def test_backpropagate_repeatedly_decreases_cost(five_neuron_network):
-    input_layer = five_neuron_network['input_layer']
-    hidden_layer = five_neuron_network['hidden_layer']
-    output_layer = five_neuron_network['output_layer']
+    input_layer = five_neuron_network["input_layer"]
+    hidden_layer = five_neuron_network["hidden_layer"]
+    output_layer = five_neuron_network["output_layer"]
 
     # Set up predictable weights
     hidden_layer.weights = [[1.0, 0.0, 0.0, 0.0, 0.0] for _ in range(5)]
@@ -349,15 +372,15 @@ def test_backpropagate_repeatedly_decreases_cost(five_neuron_network):
 
     old_cost = network.cost_function(
         desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
-        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
+        input_data=[1.0, 0.0, 0.0, 0.0, 0.0],
     )
 
     for i in range(100):
         network.backpropagate([2.0, 0.0, 0.0, 0.0, 0.0])
-        
+
         new_cost = network.cost_function(
             desired_activation_values=[2.0, 0.0, 0.0, 0.0, 0.0],
-            input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
+            input_data=[1.0, 0.0, 0.0, 0.0, 0.0],
         )
 
         assert new_cost < old_cost
@@ -368,22 +391,22 @@ def test_backpropagate_ten_layers(ten_layer_network):
     """
     This fails as the learning rate needs to be very precise (a particular number of dps) which is different to the
     learning rate required for networks with smaller numbers of layers.
-    
+
     The reason for this high precision is because activation values increase rapidly as the number of layers increases.
-    
+
     To remedy this, the sigmoid function would force activation values to be within 0 and 1 so a consistent learning
     rate can be applied to networks of varying layers. This would affect the activation process and backpropagation (a
     derivative to the sigmoid function must be applied). TBD.
     """
-    
-    network = ten_layer_network['network']
+
+    network = ten_layer_network["network"]
 
     network.layers[0].weights = [
         [0.23, -0.41, 0.67, -0.12, 0.89],
         [-0.34, 0.78, -0.56, 0.91, -0.23],
         [0.45, -0.67, 0.12, -0.89, 0.34],
         [-0.78, 0.56, -0.91, 0.23, -0.45],
-        [0.67, -0.12, 0.89, -0.34, 0.78]
+        [0.67, -0.12, 0.89, -0.34, 0.78],
     ]
     for layer in network.layers[1:]:
         layer.weights = [
@@ -391,7 +414,7 @@ def test_backpropagate_ten_layers(ten_layer_network):
             [0.12, -0.89, 0.34, -0.78, 0.56],
             [-0.91, 0.23, -0.45, 0.67, -0.12],
             [0.89, -0.34, 0.78, -0.56, 0.91],
-            [-0.23, 0.45, -0.67, 0.12, -0.89]
+            [-0.23, 0.45, -0.67, 0.12, -0.89],
         ]
 
     # For 5-neuron layers, try these small random biases:
@@ -400,44 +423,39 @@ def test_backpropagate_ten_layers(ten_layer_network):
 
     # Set up training data - contains data to pass into the network and contains desired activation values
     training_data = {
-        'input_data': [
+        "input_data": [
             # Original one-hot vectors
             [1.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 0.0, 1.0],
-            
             # Two-element combinations
             [0.5, 0.5, 0.0, 0.0, 0.0],
             [0.3, 0.7, 0.0, 0.0, 0.0],
             [0.0, 0.6, 0.4, 0.0, 0.0],
             [0.0, 0.0, 0.8, 0.2, 0.0],
             [0.0, 0.0, 0.0, 0.4, 0.6],
-            
             # Three-element combinations
             [0.2, 0.3, 0.5, 0.0, 0.0],
             [0.1, 0.4, 0.5, 0.0, 0.0],
             [0.0, 0.2, 0.3, 0.5, 0.0],
             [0.0, 0.0, 0.3, 0.4, 0.3],
-            
             # More diverse patterns
             [0.9, 0.1, 0.0, 0.0, 0.0],
             [0.1, 0.9, 0.0, 0.0, 0.0],
             [0.0, 0.1, 0.9, 0.0, 0.0],
             [0.0, 0.0, 0.1, 0.9, 0.0],
             [0.0, 0.0, 0.0, 0.1, 0.9],
-            
             # Uniform distributions
             [0.2, 0.2, 0.2, 0.2, 0.2],
             [0.15, 0.25, 0.2, 0.25, 0.15],
-            
             # Edge cases with small values
             [0.05, 0.0, 0.0, 0.0, 0.95],
             [0.95, 0.05, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.95, 0.05, 0.0],
         ],
-        'desired_activation_values': [
+        "desired_activation_values": [
             # Same as inputs (identity mapping)
             [1.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0, 0.0],
@@ -463,69 +481,90 @@ def test_backpropagate_ten_layers(ten_layer_network):
             [0.05, 0.0, 0.0, 0.0, 0.95],
             [0.95, 0.05, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.95, 0.05, 0.0],
-        ]
+        ],
     }
 
     network.print()
-    training_costs = [network.cost_function(
-        input_data=training_data['input_data'][i],
-        desired_activation_values=training_data['desired_activation_values'][i],
-    ) for i in range(len(training_data['input_data']))]
+    training_costs = [
+        network.cost_function(
+            input_data=training_data["input_data"][i],
+            desired_activation_values=training_data["desired_activation_values"][i],
+        )
+        for i in range(len(training_data["input_data"]))
+    ]
 
+    average_cost_before_training: float = 0.0
     for costs in training_costs:
+        average_cost_before_training += sum(costs)
         print(f"cost={sum(costs)}")
+    average_cost_before_training /= len(costs)
 
-    
     for j in range(30):
         print(f"epoch={j}")
 
-        for i in range(len(training_data['input_data'])):
+        for i in range(len(training_data["input_data"])):
             old_cost = network.cost_function(
-                input_data=training_data['input_data'][i],
-                desired_activation_values=training_data['desired_activation_values'][i],
+                input_data=training_data["input_data"][i],
+                desired_activation_values=training_data["desired_activation_values"][i],
             )
             for _ in range(50):
                 new_cost = network.cost_function(
-                    input_data=training_data['input_data'][i],
-                    desired_activation_values=training_data['desired_activation_values'][i],
+                    input_data=training_data["input_data"][i],
+                    desired_activation_values=training_data[
+                        "desired_activation_values"
+                    ][i],
                 )
-                network.backpropagate(training_data['desired_activation_values'][i])
+                network.backpropagate(training_data["desired_activation_values"][i])
                 # print(f"old_cost={old_cost}")
                 # print(f"new_cost={new_cost}")
 
                 old_cost = new_cost
 
     network.print()
-    training_costs = [network.cost_function(
-        input_data=training_data['input_data'][i],
-        desired_activation_values=training_data['desired_activation_values'][i],
-    ) for i in range(len(training_data['input_data']))]
+    training_costs = [
+        network.cost_function(
+            input_data=training_data["input_data"][i],
+            desired_activation_values=training_data["desired_activation_values"][i],
+        )
+        for i in range(len(training_data["input_data"]))
+    ]
 
     for costs in training_costs:
         print(f"cost={sum(costs)}")
 
+    average_cost_after_training: float = 0.0
+    for costs in training_costs:
+        average_cost_after_training += sum(costs)
+        print(f"cost={sum(costs)}")
+    average_cost_after_training /= len(costs)
+    percentage_reduction: float = (
+        (average_cost_before_training - average_cost_after_training)
+        / average_cost_before_training
+        * 100
+    )
 
+    print(f"Cost was reduced by {percentage_reduction}%!")
 
     assert False
 
 
 def test_backpropagate_with_zero_cost(five_neuron_network):
     """Test backpropagate doesn't change weights if cost is zero."""
-    input_layer = five_neuron_network['input_layer']
-    hidden_layer = five_neuron_network['hidden_layer']
-    output_layer = five_neuron_network['output_layer']
-    
+    input_layer = five_neuron_network["input_layer"]
+    hidden_layer = five_neuron_network["hidden_layer"]
+    output_layer = five_neuron_network["output_layer"]
+
     # Set up weights and activations
     hidden_layer.weights = [[1, 1, 1, 1, 1] for _ in range(5)]
     input_layer.weights = [[1, 1, 1, 1, 1] for _ in range(5)]
     for neuron in hidden_layer.neurons + output_layer.neurons:
         neuron.activation = 1
-    
+
     network = network_class.Network([input_layer, hidden_layer, output_layer])
 
     old_cost = network.cost_function(
         desired_activation_values=[1.0, 1.0, 1.0, 1.0, 1.0],
-        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
+        input_data=[1.0, 0.0, 0.0, 0.0, 0.0],
     )
     activation_values_after_providing_input_data = network.output_layer.activations
 
@@ -533,7 +572,7 @@ def test_backpropagate_with_zero_cost(five_neuron_network):
 
     new_cost = network.cost_function(
         desired_activation_values=[1.0, 1.0, 1.0, 1.0, 1.0],
-        input_data=[1.0, 0.0, 0.0, 0.0, 0.0]
+        input_data=[1.0, 0.0, 0.0, 0.0, 0.0],
     )
     assert new_cost == old_cost
 
@@ -541,9 +580,9 @@ def test_backpropagate_with_zero_cost(five_neuron_network):
 def test_backpropagate_multiple_examples(five_neuron_network):
     """This trains the network over 5 different sets of input data and tests that costs are generated at the end."""
 
-    input_layer = five_neuron_network['input_layer']
-    hidden_layer = five_neuron_network['hidden_layer']
-    output_layer = five_neuron_network['output_layer']
+    input_layer = five_neuron_network["input_layer"]
+    hidden_layer = five_neuron_network["hidden_layer"]
+    output_layer = five_neuron_network["output_layer"]
 
     # Set up predictable weights
     hidden_layer.weights = [[1.0, 1.0, 1.0, 1.0, 1.0] for _ in range(5)]
@@ -551,54 +590,58 @@ def test_backpropagate_multiple_examples(five_neuron_network):
 
     # Set up training data - contains data to pass into the network and contains desired activation values
     training_data = {
-        'input_data': [
+        "input_data": [
             [1.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 0.0, 1.0],
         ],
-        'desired_activation_values': [
+        "desired_activation_values": [
             [1.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 0.0, 1.0],
-        ]
+        ],
     }
     network = network_class.Network([input_layer, hidden_layer, output_layer])
     network.print()
-    training_costs = [network.cost_function(
-        input_data=training_data['input_data'][i],
-        desired_activation_values=training_data['desired_activation_values'][i],
-    ) for i in range(5)]
+    training_costs = [
+        network.cost_function(
+            input_data=training_data["input_data"][i],
+            desired_activation_values=training_data["desired_activation_values"][i],
+        )
+        for i in range(5)
+    ]
 
     for costs in training_costs:
         print(f"cost={sum(costs)}")
 
-    
-
     for i in range(5):
         old_cost = network.cost_function(
-            input_data=training_data['input_data'][i],
-            desired_activation_values=training_data['desired_activation_values'][i],
+            input_data=training_data["input_data"][i],
+            desired_activation_values=training_data["desired_activation_values"][i],
         )
         for _ in range(50):
             new_cost = network.cost_function(
-                input_data=training_data['input_data'][i],
-                desired_activation_values=training_data['desired_activation_values'][i],
+                input_data=training_data["input_data"][i],
+                desired_activation_values=training_data["desired_activation_values"][i],
             )
-            network.backpropagate(training_data['desired_activation_values'][i])
+            network.backpropagate(training_data["desired_activation_values"][i])
             print(f"old_cost={old_cost}")
             print(f"new_cost={new_cost}")
 
             old_cost = new_cost
 
     network.print()
-    training_costs = [network.cost_function(
-        input_data=training_data['input_data'][i],
-        desired_activation_values=training_data['desired_activation_values'][i],
-    ) for i in range(5)]
+    training_costs = [
+        network.cost_function(
+            input_data=training_data["input_data"][i],
+            desired_activation_values=training_data["desired_activation_values"][i],
+        )
+        for i in range(5)
+    ]
 
     for costs in training_costs:
         print(f"cost={sum(costs)} - all_costs={costs}")
